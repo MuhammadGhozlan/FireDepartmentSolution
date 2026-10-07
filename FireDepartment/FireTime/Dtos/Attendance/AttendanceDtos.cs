@@ -1,11 +1,15 @@
 namespace FireTime.Dtos.Attendance;
 
 public sealed record AttendanceRequest(
-    DateOnly AttendanceDate,
-    string Roic,
-    int EmployeeAssignmentId,
-    int AttendanceStatusId,
-    string? AttendanceComments);
+    DateOnly? AttendanceDate,
+    string? Roic,
+    int? EmployeeAssignmentId,
+    int? AttendanceStatusId,
+    string? AttendanceComments,
+    bool? DeletedInd,
+    DateOnly? StartDate,
+    DateOnly? EndDate
+    );
 
 public sealed record AttendanceResponse(
     int AttendanceId,
@@ -13,4 +17,5 @@ public sealed record AttendanceResponse(
     string Roic,
     int EmployeeAssignmentId,
     int AttendanceStatusId,
-    string? AttendanceComments);
+    string? AttendanceComments,
+    bool? DeletedInd);

@@ -1,33 +1,105 @@
-using FireTime.Interfaces.RepoInterfaces;
+﻿using AutoMapper;
+using FireTime.Dtos.Attendance;
+using FireTime.Interfaces.Repo_Interfaces;
 using FireTime.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace FireTime.Repositories;
-
-public sealed class AttendanceRepository(IisFireTimeContext context) : IAttendanceRepository
+namespace FireTime.Repositories
 {
-    private readonly EfCrudRepository<Attendance, int> _base = new(context);
-    public bool SupportsSoftDelete => _base.SupportsSoftDelete;
-    public Task<Attendance?> FindAsync(int id, CancellationToken token) => _base.FindAsync(id, token);
-    public Task<IReadOnlyList<Attendance>> ListAsync(int offset, int limit, CancellationToken token) => _base.ListAsync(offset, limit, token);
-    public Task AddAsync(Attendance entity, CancellationToken token) => _base.AddAsync(entity, token);
-    public Task SaveAsync(CancellationToken token) => _base.SaveAsync(token);
-    public bool IsDeleted(Attendance entity) => _base.IsDeleted(entity);
-    public void MarkDeleted(Attendance entity) => _base.MarkDeleted(entity);
-    public void StampCreated(Attendance entity, string actor, DateTime timestamp) => _base.StampCreated(entity, actor, timestamp);
-    public void StampUpdated(Attendance entity, string actor, DateTime timestamp) => _base.StampUpdated(entity, actor, timestamp);
+    public class AttendanceRepository : IAttendanceRepository
+    {
+        private readonly IMapper _mapper;
+        private IisFireTimeContext _context;
+        public AttendanceRepository(IMapper _mapper, IisFireTimeContext _context)
+        {
+            this._context = _context;
+            this._mapper = _mapper;
+        }
 
-    public Task<bool> AssignmentMatchesAsync(int assignmentId, string roic, DateOnly date, CancellationToken token) =>
-        context.EmployeeAssignments.AnyAsync(a => a.EmployeeAssignmentId == assignmentId &&
-            a.Roic == roic && !a.DeletedInd && a.AssignmentStartDate <= date &&
-            (a.AssignmentEndDate == null || a.AssignmentEndDate >= date), token);
+        public async Task<List<AttendanceResponse>> GetAllAttendance() => _mapper.Map<List<AttendanceResponse>>(await _context.Attendances.Where(att => att.DeletedInd == false).ToListAsync());
 
-    public Task<bool> StatusExistsAsync(int statusId, CancellationToken token) =>
-        context.AttendanceStatuses.AnyAsync(s => s.AttendanceStatusId == statusId, token);
+        public async Task<List<AttendanceResponse>> TakeAttendance(List<AttendanceRequest> attendanceRequestList)
+        {
+            var attendanceList = _mapper.Map<List<Attendance>>(attendanceRequestList);
+            foreach(var attendance in attendanceList)
+            {
+                attendance.CreatedDate = DateTime.Now;
+                attendance.LastUpdateDate = DateTime.Now;
+                attendance.CreatedBy = "System";
+                attendance.LastUpdateBy = "System";
+            }
+            await _context.Attendances.AddRangeAsync(attendanceList);               
+            await _context.SaveChangesAsync();
+            return _mapper.Map<List<AttendanceResponse>>(attendanceList);
+        }
+        public async Task<AttendanceResponse?> UpdateAttendance(AttendanceRequest attendanceRequest, int id)
+        {
+            var attendance = await _context.Attendances.Where(att => att.DeletedInd == false).FirstOrDefaultAsync(att => att.AttendanceId == id);
+            if(attendance == null)
+            {
+                return null;
+            }
+            _mapper.Map(attendanceRequest, attendance);
+            await _context.SaveChangesAsync();
+            return _mapper.Map<AttendanceResponse>(attendance);
+        }
+        public async Task<AttendanceResponse?> DeleteAttendance(int id)
+        {
+            var attendance = await _context.Attendances.Where(att => att.DeletedInd == false).FirstOrDefaultAsync(att => att.AttendanceId == id);
+            if(attendance == null)
+            {
+                return null;
+            }
+            attendance.DeletedInd = true;
+            await _context.SaveChangesAsync();
+            return _mapper.Map<AttendanceResponse>(attendance);
 
-    public async Task<IReadOnlyList<Attendance>> ForEmployeeAsync(string roic, DateOnly date, CancellationToken token) =>
-        await context.Attendances.AsNoTracking()
-            .Where(a => a.Roic == roic && a.AttendanceDate == date && !a.DeletedInd)
-            .OrderBy(a => a.AttendanceId)
-            .ToListAsync(token);
+        }
+        public async Task<List<AttendanceResponse>> FilterAttendance(AttendanceRequest attendanceRequest)
+        {
+
+            var query = _context.Attendances.Where(att => !att.DeletedInd);
+
+            if(attendanceRequest != null)
+            {
+
+                if(attendanceRequest.AttendanceDate.HasValue && attendanceRequest.AttendanceDate != default)
+                {
+                    query = query.Where(att => att.AttendanceDate == attendanceRequest.AttendanceDate);
+                }
+                if(attendanceRequest.StartDate.HasValue)
+                {
+                    query = query.Where(att => att.AttendanceDate >= attendanceRequest.StartDate.Value);
+                }
+
+                if(attendanceRequest.EndDate.HasValue)
+                {
+                    query = query.Where(att => att.AttendanceDate <= attendanceRequest.EndDate.Value);
+                }
+
+                if(!string.IsNullOrWhiteSpace(attendanceRequest.Roic))
+                {
+                    query = query.Where(att => att.Roic == attendanceRequest.Roic);
+                }
+
+                if(attendanceRequest.EmployeeAssignmentId != null && attendanceRequest.EmployeeAssignmentId != 0)
+                {
+                    query = query.Where(att => att.EmployeeAssignmentId == attendanceRequest.EmployeeAssignmentId);
+                }
+
+                if(attendanceRequest.AttendanceStatusId != null && attendanceRequest.AttendanceStatusId != 0)
+                {
+                    query = query.Where(att => att.AttendanceStatusId == attendanceRequest.AttendanceStatusId);
+                }
+
+                if(!string.IsNullOrWhiteSpace(attendanceRequest.AttendanceComments))
+                {
+                    query = query.Where(att => att.AttendanceComments == attendanceRequest.AttendanceComments);
+                }
+            }
+            var attendances = await query.ToListAsync();
+            return _mapper.Map<List<AttendanceResponse>>(attendances);
+        }
+
+    }
 }

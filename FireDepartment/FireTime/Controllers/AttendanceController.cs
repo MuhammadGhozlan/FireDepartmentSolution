@@ -1,33 +1,43 @@
-using FireTime.Dtos.Attendance;
-using FireTime.Interfaces.ServiceInterfaces;
+﻿using FireTime.Dtos.Attendance;
+using FireTime.Interfaces.Service_Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FireTime.Controllers;
-
-[Route("api/attendance")]
-public sealed class AttendanceController(IAttendanceService service)
-    : CrudController<AttendanceRequest, AttendanceResponse, int>(service)
+namespace FireTime.Controllers
 {
-    [HttpGet("getAttendance")]
-    public async Task<ActionResult<IReadOnlyList<AttendanceResponse>>> GetAttendance(
-        [FromQuery] string roic, [FromQuery] DateOnly date, CancellationToken cancellationToken)
+    [Route("api/attendance")]
+    [ApiController]
+    public class AttendanceController : ControllerBase
     {
-        if (string.IsNullOrWhiteSpace(roic))
-            return BadRequest("ROIC is required.");
-        return Ok(await service.ForEmployeeAsync(roic, date, cancellationToken));
-    }
-
-    [HttpPost("takeAttendance")]
-    public async Task<ActionResult<AttendanceResponse>> TakeAttendance(
-        AttendanceRequest request, CancellationToken cancellationToken)
-    {
-        try
+        private readonly IAttendanceService _attendanceService;
+        public AttendanceController(IAttendanceService _attendanceService)
         {
-            return Ok(await service.CreateAsync(request, cancellationToken));
+           this._attendanceService = _attendanceService;
         }
-        catch (ArgumentException exception)
+        [HttpGet("getAttendance")]
+        public async Task<ActionResult<List<AttendanceResponse>>> GetAttendance()
         {
-            return BadRequest(exception.Message);
+            return Ok(await _attendanceService.GetAllAttendance());             
+        }
+        [HttpPost("takeAttendance")]
+        public async Task<ActionResult<List<AttendanceResponse>>> TakeAttendance([FromBody] List<AttendanceRequest> attendanceRequests)              
+        {
+            return Ok(await _attendanceService.TakeAttendance(attendanceRequests));
+        }
+        [HttpPost("filterAttendance")]
+        public async Task<ActionResult<List<AttendanceResponse>>> FilterAttendance([FromBody] AttendanceRequest attendanceRequest)
+        {
+            return Ok(await _attendanceService.FilterAttendance(attendanceRequest));
+        }
+        [HttpPut("updateAttendance/{id}")]
+        public async Task<ActionResult<AttendanceResponse>> UpdateAttendance([FromBody] AttendanceRequest attendanceRequest, int id)
+        {
+            return Ok(await _attendanceService.UpdateAttendance(attendanceRequest, id));
+        }
+        [HttpDelete("deleteAttendance/{id}")]
+        public async Task<ActionResult<AttendanceResponse>> DeleteAttendance(int id)
+        {
+            return Ok(await _attendanceService.DeleteAttendance(id));
         }
     }
 }

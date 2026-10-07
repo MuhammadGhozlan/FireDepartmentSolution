@@ -1,8 +1,13 @@
-using FireTime.Dtos.Attendance;
+﻿using FireTime.Dtos.Attendance;
 
-namespace FireTime.Interfaces.ServiceInterfaces;
-
-public interface IAttendanceService : ICrudService<AttendanceRequest, AttendanceResponse, int>
+namespace FireTime.Interfaces.Service_Interfaces
 {
-    Task<IReadOnlyList<AttendanceResponse>> ForEmployeeAsync(string roic, DateOnly date, CancellationToken cancellationToken);
+    public interface IAttendanceService
+    {
+        Task<List<AttendanceResponse>> GetAllAttendance();
+        Task<List<AttendanceResponse>> TakeAttendance(List<AttendanceRequest> attendanceRequestList);
+        Task<AttendanceResponse> UpdateAttendance(AttendanceRequest attendanceRequest, int id);
+        Task<AttendanceResponse> DeleteAttendance(int id);
+        Task<List<AttendanceResponse>> FilterAttendance(AttendanceRequest attendanceRequest);
+    }
 }

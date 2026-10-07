@@ -1,6 +1,8 @@
 using FireTime;
 using FireTime.Controllers;
+using FireTime.Interfaces.Repo_Interfaces;
 using FireTime.Interfaces.RepoInterfaces;
+using FireTime.Interfaces.Service_Interfaces;
 using FireTime.Interfaces.ServiceInterfaces;
 using FireTime.Models;
 using FireTime.Repositories;
@@ -34,6 +36,7 @@ builder.Services.AddScoped<IRequestWorkflowService, RequestWorkflowService>();
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddAutoMapper(cfg => cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
 
 var app = builder.Build();
 
@@ -41,6 +44,11 @@ var app = builder.Build();
 if(app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "FireTime API");
+        options.RoutePrefix = string.Empty;
+    });
 }
 
 app.UseHttpsRedirection();

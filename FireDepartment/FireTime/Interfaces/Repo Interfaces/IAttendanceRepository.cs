@@ -1,10 +1,14 @@
-using FireTime.Models;
+﻿
+using FireTime.Dtos.Attendance;
 
-namespace FireTime.Interfaces.RepoInterfaces;
-
-public interface IAttendanceRepository : ICrudRepository<Attendance, int>
+namespace FireTime.Interfaces.Repo_Interfaces
 {
-    Task<bool> AssignmentMatchesAsync(int assignmentId, string roic, DateOnly date, CancellationToken cancellationToken);
-    Task<bool> StatusExistsAsync(int statusId, CancellationToken cancellationToken);
-    Task<IReadOnlyList<Attendance>> ForEmployeeAsync(string roic, DateOnly date, CancellationToken cancellationToken);
+    public interface IAttendanceRepository
+    {
+        Task<List<AttendanceResponse>> GetAllAttendance();
+        Task<List<AttendanceResponse>> TakeAttendance(List<AttendanceRequest> attendanceRequestList);
+        Task<AttendanceResponse?> UpdateAttendance(AttendanceRequest attendanceRequest, int id);
+        Task<AttendanceResponse?> DeleteAttendance(int id);
+        Task<List<AttendanceResponse>> FilterAttendance(AttendanceRequest attendanceRequest);
+    }
 }
