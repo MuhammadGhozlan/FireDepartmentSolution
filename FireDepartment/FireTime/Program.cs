@@ -1,4 +1,8 @@
+using FireTime.Interfaces.Repo_Interfaces;
+using FireTime.Interfaces.Service_Interfaces;
 using FireTime.Models;
+using FireTime.Repositories;
+using FireTime.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +20,13 @@ builder.Services.AddDbContext<IisFireTimeContext>(options =>
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddAutoMapper(cfg => cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
+
+//Repos Registration
+builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+
+//Services Registration
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
 var app = builder.Build();
 
@@ -23,6 +34,11 @@ var app = builder.Build();
 if(app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "FireTime API");
+        options.RoutePrefix = string.Empty;
+    });
 }
 
 app.UseHttpsRedirection();
