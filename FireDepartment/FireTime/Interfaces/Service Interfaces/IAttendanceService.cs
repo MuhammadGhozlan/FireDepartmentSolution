@@ -6,8 +6,8 @@ namespace FireTime.Interfaces.Service_Interfaces
     {
         Task<List<AttendanceResponse>> GetAllAttendance();
         Task<List<AttendanceResponse>> TakeAttendance(List<AttendanceRequest> attendanceRequestList);
-        Task<AttendanceResponse> UpdateAttendance(AttendanceRequest attendanceRequest, int id);
+        Task<AttendanceResponse> UpdateAttendance(UpdateAttendanceRequest updateattendanceRequest, int id);
         Task<AttendanceResponse> DeleteAttendance(int id);
-        Task<List<AttendanceResponse>> FilterAttendance(AttendanceRequest attendanceRequest);
+        Task<List<AttendanceResponse>> FilterAttendance(AttendanceFilterRequest attendanceFilterRequest);
     }
 }

@@ -25,19 +25,41 @@ namespace FireTime.Controllers
             return Ok(await _attendanceService.TakeAttendance(attendanceRequests));
         }
         [HttpPost("filterAttendance")]
-        public async Task<ActionResult<List<AttendanceResponse>>> FilterAttendance([FromBody] AttendanceRequest attendanceRequest)
+        public async Task<ActionResult<List<AttendanceResponse>>> FilterAttendance([FromBody] AttendanceFilterRequest attendanceFilterRequest)
         {
-            return Ok(await _attendanceService.FilterAttendance(attendanceRequest));
+            return Ok(await _attendanceService.FilterAttendance(attendanceFilterRequest));
         }
         [HttpPut("updateAttendance/{id}")]
-        public async Task<ActionResult<AttendanceResponse>> UpdateAttendance([FromBody] AttendanceRequest attendanceRequest, int id)
+        public async Task<ActionResult<AttendanceResponse>> UpdateAttendance([FromBody] UpdateAttendanceRequest updateAttendanceRequest, int id)
         {
-            return Ok(await _attendanceService.UpdateAttendance(attendanceRequest, id));
+            try
+            {
+                return Ok(await _attendanceService.UpdateAttendance(updateAttendanceRequest, id));
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
         [HttpDelete("deleteAttendance/{id}")]
         public async Task<ActionResult<AttendanceResponse>> DeleteAttendance(int id)
         {
-            return Ok(await _attendanceService.DeleteAttendance(id));
+            try
+            {
+                return Ok(await _attendanceService.DeleteAttendance(id));
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
