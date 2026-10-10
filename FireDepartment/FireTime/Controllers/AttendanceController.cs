@@ -20,9 +20,17 @@ namespace FireTime.Controllers
             return Ok(await _attendanceService.GetAllAttendance());             
         }
         [HttpPost("takeAttendance")]
-        public async Task<ActionResult<List<AttendanceResponse>>> TakeAttendance([FromBody] List<AttendanceRequest> attendanceRequests)              
+        public async Task<ActionResult<List<AttendanceResponse>>> TakeAttendance([FromBody] List<AttendanceRequest> attendanceRequests)
         {
-            return Ok(await _attendanceService.TakeAttendance(attendanceRequests));
+            try
+            {
+                return Ok(await _attendanceService.TakeAttendance(attendanceRequests));
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            
         }
         [HttpPost("filterAttendance")]
         public async Task<ActionResult<List<AttendanceResponse>>> FilterAttendance([FromBody] AttendanceFilterRequest attendanceFilterRequest)
