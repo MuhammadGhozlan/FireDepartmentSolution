@@ -90,27 +90,53 @@ namespace FireTime.Repositories
 
             var targetDate = updateAttendanceRequest.AttendanceDate ?? attendance.AttendanceDate;
 
-            if(targetRoic != attendance.Roic || updateAttendanceRequest.AttendanceDate.HasValue)
+            // Assignment validation
+            if(updateAttendanceRequest.EmployeeAssignmentId.HasValue)
             {
-                var assignment = await _context.EmployeeAssignments
-                    .Where(ea => !ea.DeletedInd && ea.Roic == targetRoic)
+                var specificAssignment = await _context.EmployeeAssignments
+                    .Where(ea => !ea.DeletedInd
+                              && ea.EmployeeAssignmentId == updateAttendanceRequest.EmployeeAssignmentId.Value
+                              && ea.Roic == targetRoic)
                     .FirstOrDefaultAsync(ea => ea.AssignmentStartDate <= targetDate
                                             && (ea.AssignmentEndDate == null || ea.AssignmentEndDate >= targetDate));
 
-                attendance.EmployeeAssignmentId = assignment?.EmployeeAssignmentId
-                    ?? throw new KeyNotFoundException($"Active assignment not found for ROIC {targetRoic} on {targetDate}.");
+                attendance.EmployeeAssignmentId = specificAssignment?.EmployeeAssignmentId
+                    ?? throw new KeyNotFoundException($"Assignment ID {updateAttendanceRequest.EmployeeAssignmentId.Value} is invalid, deleted, or does not cover {targetDate} for ROIC {targetRoic}.");
 
                 attendance.Roic = targetRoic;
                 attendance.AttendanceDate = targetDate;
             }
+            else if(targetRoic != attendance.Roic || updateAttendanceRequest.AttendanceDate.HasValue)
+            {
+                var matchingAssignments = await _context.EmployeeAssignments
+                    .Where(ea => !ea.DeletedInd
+                              && ea.Roic == targetRoic
+                              && ea.AssignmentStartDate <= targetDate
+                              && (ea.AssignmentEndDate == null || ea.AssignmentEndDate >= targetDate))
+                    .ToListAsync();
 
+                if(matchingAssignments.Count == 0)
+                    throw new KeyNotFoundException($"Active assignment not found for ROIC {targetRoic} on {targetDate}.");
+
+                if(matchingAssignments.Count > 1)
+                    throw new ArgumentException($"Multiple overlapping assignments found for ROIC {targetRoic} on {targetDate}. Specify EmployeeAssignmentId.");
+
+                attendance.EmployeeAssignmentId = matchingAssignments[0].EmployeeAssignmentId;
+                attendance.Roic = targetRoic;
+                attendance.AttendanceDate = targetDate;
+            }
+
+            // 1. Status update
+            if(updateAttendanceRequest.AttendanceStatusId.HasValue)
+                attendance.AttendanceStatusId = updateAttendanceRequest.AttendanceStatusId.Value;
+
+            // 2. Clear or update comment (single check)
             if(updateAttendanceRequest.AttendanceComments != null)
+            {
                 attendance.AttendanceComments = string.IsNullOrWhiteSpace(updateAttendanceRequest.AttendanceComments)
                     ? null
                     : updateAttendanceRequest.AttendanceComments;
-
-            if(updateAttendanceRequest.AttendanceComments != null)
-                attendance.AttendanceComments = updateAttendanceRequest.AttendanceComments;
+            }
 
             attendance.LastUpdateDate = DateTime.Now;
             attendance.LastUpdateBy = "System";
