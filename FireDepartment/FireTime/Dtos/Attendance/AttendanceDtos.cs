@@ -37,3 +37,26 @@ public sealed record AttendanceResponse(
     int AttendanceStatusId,
     string? AttendanceComments,
     bool? DeletedInd);
+
+public sealed record AttendanceAssignmentResponse(
+    int EmployeeAssignmentId,
+    string Roic,
+    DateOnly AssignmentStartDate,
+    DateOnly? AssignmentEndDate,
+    bool IsTemp,
+    int CompanyPositionId,
+    string CompanyNme,
+    string ShiftCode,
+    int WorkPeriodNbr);
+
+public sealed record AttendanceRosterResponse(
+    DateOnly AttendanceDate,
+    int EmployeeAssignmentId,
+    string Roic,
+    int EmployeeNbr,
+    string FirstNme,
+    string LastNme,
+    string CompanyNme,
+    string ShiftCode,
+    int WorkPeriodNbr,
+    List<AttendanceResponse> Attendances);

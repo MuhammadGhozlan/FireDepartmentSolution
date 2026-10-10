@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Azure.Core;
 using FireTime.Dtos.Attendance;
+using FireTime.Dtos.Lookups;
 using FireTime.Interfaces.Repo_Interfaces;
 using FireTime.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace FireTime.Repositories
 {
@@ -19,10 +21,79 @@ namespace FireTime.Repositories
 
         public async Task<List<AttendanceResponse>> GetAllAttendance() => _mapper.Map<List<AttendanceResponse>>(await _context.Attendances.Where(att => att.DeletedInd == false).ToListAsync());
 
+        public async Task<List<AttendanceStatusResponse>> GetAttendanceStatuses()
+        {
+            return await _context.AttendanceStatuses.AsNoTracking()
+                .OrderBy(status => status.AttendanceStatusDesc)
+                .Select(status => new AttendanceStatusResponse(status.AttendanceStatusId, status.AttendanceStatusCde, status.AttendanceStatusDesc))
+                .ToListAsync();
+        }
+
+        public async Task<List<AttendanceAssignmentResponse>> GetAttendanceAssignments(string roic, DateOnly date)
+        {
+            return await _context.EmployeeAssignments.AsNoTracking()
+                .Where(ea => !ea.DeletedInd && ea.Roic == roic
+                    && ea.AssignmentStartDate <= date
+                    && (ea.AssignmentEndDate == null || ea.AssignmentEndDate >= date))
+                .OrderBy(ea => ea.CompanyPosition.Company.CompanyNme)
+                .ThenBy(ea => ea.CompanyPosition.Shift.ShiftCode)
+                .Select(ea => new AttendanceAssignmentResponse(
+                    ea.EmployeeAssignmentId, ea.Roic, ea.AssignmentStartDate, ea.AssignmentEndDate,
+                    ea.IsTemp, ea.CompanyPositionId, ea.CompanyPosition.Company.CompanyNme,
+                    ea.CompanyPosition.Shift.ShiftCode, ea.WorkPeriod.WorkPeriodNbr))
+                .ToListAsync();
+        }
+
+        public async Task<List<AttendanceRosterResponse>> GetAttendanceRoster(DateOnly date, int workPeriodNbr)
+        {
+            var assignments = await _context.EmployeeAssignments.AsNoTracking()
+                .Where(ea => !ea.DeletedInd
+                    && ea.AssignmentStartDate <= date
+                    && (ea.AssignmentEndDate == null || ea.AssignmentEndDate >= date)
+                    && ea.WorkPeriod.WorkPeriodNbr == workPeriodNbr)
+                .OrderBy(ea => ea.CompanyPosition.Company.CompanyNme)
+                .ThenBy(ea => ea.RoicNavigation.LastNme)
+                .ThenBy(ea => ea.RoicNavigation.FirstNme)
+                .Select(ea => new
+                {
+                    ea.EmployeeAssignmentId,
+                    ea.Roic,
+                    ea.RoicNavigation.EmployeeNbr,
+                    ea.RoicNavigation.FirstNme,
+                    ea.RoicNavigation.LastNme,
+                    ea.CompanyPosition.Company.CompanyNme,
+                    ea.CompanyPosition.Shift.ShiftCode,
+                    ea.WorkPeriod.WorkPeriodNbr
+                })
+                .ToListAsync();
+
+            if(assignments.Count == 0)
+                return new List<AttendanceRosterResponse>();
+
+            var assignmentIds = assignments.Select(ea => ea.EmployeeAssignmentId).ToList();
+            var attendance = await _context.Attendances.AsNoTracking()
+                .Where(att => !att.DeletedInd && att.AttendanceDate == date
+                    && assignmentIds.Contains(att.EmployeeAssignmentId))
+                .OrderBy(att => att.AttendanceId)
+                .ToListAsync();
+            var attendanceByAssignment = attendance.ToLookup(att => att.EmployeeAssignmentId);
+
+            return assignments.Select(ea => new AttendanceRosterResponse(
+                date, ea.EmployeeAssignmentId, ea.Roic, ea.EmployeeNbr, ea.FirstNme,
+                ea.LastNme, ea.CompanyNme, ea.ShiftCode, ea.WorkPeriodNbr,
+                _mapper.Map<List<AttendanceResponse>>(attendanceByAssignment[ea.EmployeeAssignmentId].ToList())))
+                .ToList();
+        }
+
         public async Task<List<AttendanceResponse>> TakeAttendance(List<AttendanceRequest> attendanceRequestList)
         {
+            if(attendanceRequestList == null || attendanceRequestList.Count == 0)
+                throw new ArgumentException("At least one attendance record is required.");
+
             var attendanceList = _mapper.Map<List<Attendance>>(attendanceRequestList);
             DateTime now = DateTime.Now;
+            var batchKeys = new HashSet<(int AssignmentId, DateOnly Date)>();
+            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
             for(int i = 0; i < attendanceList.Count; i++)
             {
@@ -63,6 +134,13 @@ namespace FireTime.Repositories
                     attendance.EmployeeAssignmentId = matchingAssignments[0].EmployeeAssignmentId;
                 }
 
+                var key = (attendance.EmployeeAssignmentId, attendance.AttendanceDate);
+                if(!batchKeys.Add(key) || await _context.Attendances.AnyAsync(att => !att.DeletedInd
+                    && att.EmployeeAssignmentId == key.EmployeeAssignmentId && att.AttendanceDate == key.AttendanceDate))
+                {
+                    throw new ArgumentException($"Attendance already exists for assignment {key.EmployeeAssignmentId} on {key.AttendanceDate}.");
+                }
+
                 attendance.CreatedDate = now;
                 attendance.LastUpdateDate = now;
                 attendance.CreatedBy = "System";
@@ -72,17 +150,22 @@ namespace FireTime.Repositories
 
             await _context.Attendances.AddRangeAsync(attendanceList);
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
             return _mapper.Map<List<AttendanceResponse>>(attendanceList);
         }
 
         public async Task<AttendanceResponse?> UpdateAttendance(UpdateAttendanceRequest updateAttendanceRequest, int id)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
             var attendance = await _context.Attendances
                 .Where(att => !att.DeletedInd)
                 .FirstOrDefaultAsync(att => att.AttendanceId == id);
 
             if(attendance == null)
                 return null;
+
+            var originalAssignmentId = attendance.EmployeeAssignmentId;
+            var originalDate = attendance.AttendanceDate;
 
             var targetRoic = !string.IsNullOrWhiteSpace(updateAttendanceRequest.Roic)
                 ? updateAttendanceRequest.Roic
@@ -126,6 +209,15 @@ namespace FireTime.Repositories
                 attendance.AttendanceDate = targetDate;
             }
 
+            if((attendance.EmployeeAssignmentId != originalAssignmentId || attendance.AttendanceDate != originalDate)
+                && await _context.Attendances.AnyAsync(att => !att.DeletedInd
+                    && att.AttendanceId != id
+                    && att.EmployeeAssignmentId == attendance.EmployeeAssignmentId
+                    && att.AttendanceDate == attendance.AttendanceDate))
+            {
+                throw new ArgumentException($"Attendance already exists for assignment {attendance.EmployeeAssignmentId} on {attendance.AttendanceDate}.");
+            }
+
             // 1. Status update
             if(updateAttendanceRequest.AttendanceStatusId.HasValue)
                 attendance.AttendanceStatusId = updateAttendanceRequest.AttendanceStatusId.Value;
@@ -142,6 +234,7 @@ namespace FireTime.Repositories
             attendance.LastUpdateBy = "System";
 
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
             return _mapper.Map<AttendanceResponse>(attendance);
         }
         public async Task<AttendanceResponse?> DeleteAttendance(int id)

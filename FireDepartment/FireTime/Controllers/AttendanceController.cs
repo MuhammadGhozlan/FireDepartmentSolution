@@ -1,4 +1,5 @@
 ﻿using FireTime.Dtos.Attendance;
+using FireTime.Dtos.Lookups;
 using FireTime.Interfaces.Service_Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,35 @@ namespace FireTime.Controllers
         public async Task<ActionResult<List<AttendanceResponse>>> GetAttendance()
         {
             return Ok(await _attendanceService.GetAllAttendance());             
+        }
+        [HttpGet("getAttendanceStatuses")]
+        public async Task<ActionResult<List<AttendanceStatusResponse>>> GetAttendanceStatuses()
+        {
+            return Ok(await _attendanceService.GetAttendanceStatuses());
+        }
+        [HttpGet("getAttendanceAssignments")]
+        public async Task<ActionResult<List<AttendanceAssignmentResponse>>> GetAttendanceAssignments([FromQuery] string roic, [FromQuery] DateOnly date)
+        {
+            try
+            {
+                return Ok(await _attendanceService.GetAttendanceAssignments(roic, date));
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpGet("getAttendanceRoster")]
+        public async Task<ActionResult<List<AttendanceRosterResponse>>> GetAttendanceRoster([FromQuery] DateOnly date, [FromQuery] int workPeriodNbr)
+        {
+            try
+            {
+                return Ok(await _attendanceService.GetAttendanceRoster(date, workPeriodNbr));
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         [HttpPost("takeAttendance")]
         public async Task<ActionResult<List<AttendanceResponse>>> TakeAttendance([FromBody] List<AttendanceRequest> attendanceRequests)

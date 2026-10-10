@@ -1,4 +1,5 @@
 ﻿using FireTime.Dtos.Attendance;
+using FireTime.Dtos.Lookups;
 using FireTime.Interfaces.Repo_Interfaces;
 using FireTime.Interfaces.Service_Interfaces;
 
@@ -48,6 +49,27 @@ namespace FireTime.Services
                 _logger.LogInformation("No attendance records found.");
             }
             return attendees;            
+        }
+
+        public async Task<List<AttendanceStatusResponse>> GetAttendanceStatuses()
+        {
+            return await _attendanceRepository.GetAttendanceStatuses();
+        }
+
+        public async Task<List<AttendanceAssignmentResponse>> GetAttendanceAssignments(string roic, DateOnly date)
+        {
+            if(string.IsNullOrWhiteSpace(roic) || date == default)
+                throw new ArgumentException("A ROIC and attendance date are required.");
+
+            return await _attendanceRepository.GetAttendanceAssignments(roic.Trim(), date);
+        }
+
+        public async Task<List<AttendanceRosterResponse>> GetAttendanceRoster(DateOnly date, int workPeriodNbr)
+        {
+            if(date == default || workPeriodNbr < 1 || workPeriodNbr > 14)
+                throw new ArgumentException("A date and WorkPeriodNbr from 1 to 14 are required.");
+
+            return await _attendanceRepository.GetAttendanceRoster(date, workPeriodNbr);
         }
 
         public async Task<List<AttendanceResponse>> TakeAttendance(List<AttendanceRequest> attendanceRequestList)
