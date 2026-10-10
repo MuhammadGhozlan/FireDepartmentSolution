@@ -1,15 +1,20 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace FireTime.Dtos.Attendance;
 
 public sealed record AttendanceRequest(
     DateOnly AttendanceDate,
-    string Roic,    
+    string Roic,
+    [Range(1, int.MaxValue, ErrorMessage = "A valid AttendanceStatusId is required.")]
     int AttendanceStatusId,
-    string? AttendanceComments 
+    string? AttendanceComments,
+    int? EmployeeAssignmentId = null
     );
 public sealed record AttendanceFilterRequest(
     DateOnly? AttendanceDate,
     string? Roic,
     int? EmployeeAssignmentId,
+    [Range(1, int.MaxValue, ErrorMessage = "A valid AttendanceStatusId is required.")]
     int? AttendanceStatusId,
     string? AttendanceComments,      
     DateOnly? StartDate,
@@ -17,7 +22,8 @@ public sealed record AttendanceFilterRequest(
     );
 public sealed record UpdateAttendanceRequest(     
     DateOnly? AttendanceDate,
-    string? Roic,     
+    string? Roic,
+    [Range(1, int.MaxValue, ErrorMessage = "A valid AttendanceStatusId is required.")]
     int? AttendanceStatusId,
     string? AttendanceComments
     );

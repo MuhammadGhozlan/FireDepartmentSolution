@@ -24,15 +24,44 @@ namespace FireTime.Repositories
             var attendanceList = _mapper.Map<List<Attendance>>(attendanceRequestList);
             DateTime now = DateTime.Now;
 
-            foreach(var attendance in attendanceList)
+            for(int i = 0; i < attendanceList.Count; i++)
             {
-                var assignment = await _context.EmployeeAssignments
-                    .Where(ea => !ea.DeletedInd && ea.Roic == attendance.Roic)
-                    .FirstOrDefaultAsync(ea => ea.AssignmentStartDate <= attendance.AttendanceDate
-                                            && (ea.AssignmentEndDate == null || ea.AssignmentEndDate >= attendance.AttendanceDate));
+                var attendance = attendanceList[i];
+                var request = attendanceRequestList[i];
 
-                attendance.EmployeeAssignmentId = assignment?.EmployeeAssignmentId
-                    ?? throw new KeyNotFoundException($"Active assignment not found for ROIC {attendance.Roic} on {attendance.AttendanceDate}.");
+                if(request.EmployeeAssignmentId.HasValue)
+                {
+                    var specificAssignment = await _context.EmployeeAssignments
+                        .Where(ea => !ea.DeletedInd
+                                  && ea.EmployeeAssignmentId == request.EmployeeAssignmentId.Value
+                                  && ea.Roic == attendance.Roic)
+                        .FirstOrDefaultAsync(ea => ea.AssignmentStartDate <= attendance.AttendanceDate
+                                                && (ea.AssignmentEndDate == null || ea.AssignmentEndDate >= attendance.AttendanceDate));
+
+                    attendance.EmployeeAssignmentId = specificAssignment?.EmployeeAssignmentId
+                        ?? throw new KeyNotFoundException($"Assignment ID {request.EmployeeAssignmentId.Value} is invalid, deleted, or does not cover {attendance.AttendanceDate} for ROIC {attendance.Roic}.");
+                }
+                else
+                {
+                    var matchingAssignments = await _context.EmployeeAssignments
+                        .Where(ea => !ea.DeletedInd
+                                  && ea.Roic == attendance.Roic
+                                  && ea.AssignmentStartDate <= attendance.AttendanceDate
+                                  && (ea.AssignmentEndDate == null || ea.AssignmentEndDate >= attendance.AttendanceDate))
+                        .ToListAsync();
+
+                    if(matchingAssignments.Count == 0)
+                    {
+                        throw new KeyNotFoundException($"Active assignment not found for ROIC {attendance.Roic} on {attendance.AttendanceDate}.");
+                    }
+
+                    if(matchingAssignments.Count > 1)
+                    {
+                        throw new ArgumentException($"Multiple overlapping assignments found for ROIC {attendance.Roic} on {attendance.AttendanceDate}. Specify EmployeeAssignmentId.");
+                    }
+
+                    attendance.EmployeeAssignmentId = matchingAssignments[0].EmployeeAssignmentId;
+                }
 
                 attendance.CreatedDate = now;
                 attendance.LastUpdateDate = now;
@@ -75,8 +104,10 @@ namespace FireTime.Repositories
                 attendance.AttendanceDate = targetDate;
             }
 
-            if(updateAttendanceRequest.AttendanceStatusId.HasValue)
-                attendance.AttendanceStatusId = updateAttendanceRequest.AttendanceStatusId.Value;
+            if(updateAttendanceRequest.AttendanceComments != null)
+                attendance.AttendanceComments = string.IsNullOrWhiteSpace(updateAttendanceRequest.AttendanceComments)
+                    ? null
+                    : updateAttendanceRequest.AttendanceComments;
 
             if(updateAttendanceRequest.AttendanceComments != null)
                 attendance.AttendanceComments = updateAttendanceRequest.AttendanceComments;

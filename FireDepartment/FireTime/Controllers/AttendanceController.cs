@@ -26,11 +26,14 @@ namespace FireTime.Controllers
             {
                 return Ok(await _attendanceService.TakeAttendance(attendanceRequests));
             }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch(KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
             }
-            
         }
         [HttpPost("filterAttendance")]
         public async Task<ActionResult<List<AttendanceResponse>>> FilterAttendance([FromBody] AttendanceFilterRequest attendanceFilterRequest)
