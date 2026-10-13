@@ -1,5 +1,6 @@
 ﻿
 using FireTime.Dtos.Attendance;
+using FireTime.Dtos.Lookups;
 
 namespace FireTime.Interfaces.Repo_Interfaces
 {

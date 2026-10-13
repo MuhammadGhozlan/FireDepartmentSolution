@@ -25,8 +25,7 @@ public sealed record UpdateAttendanceRequest(
     string? Roic,
     [Range(1, int.MaxValue, ErrorMessage = "A valid AttendanceStatusId is required.")]
     int? AttendanceStatusId,
-    string? AttendanceComments,
-    int? EmployeeAssignmentId = null
+    string? AttendanceComments    
     );
 
 public sealed record AttendanceResponse(
