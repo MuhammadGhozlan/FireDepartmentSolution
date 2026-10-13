@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
-using Azure.Core;
 using FireTime.Dtos.Attendance;
-using FireTime.Dtos.Lookups;
 using FireTime.Interfaces.Repo_Interfaces;
 using FireTime.Models;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +18,7 @@ namespace FireTime.Repositories
 
         public async Task<List<AttendanceResponse>> GetAllAttendance() => _mapper.Map<List<AttendanceResponse>>(await _context.Attendances.Where(att => att.DeletedInd == false).ToListAsync());
 
-        public async Task<List<AttendanceResponse>> TakeAttendance(List<AttendanceRequest> attendanceRequestList)
+        public async Task<List<AttendanceResponse>?> TakeAttendance(List<AttendanceRequest> attendanceRequestList)
         {
 
             var attendanceList = new List<Attendance>();
@@ -35,7 +33,7 @@ namespace FireTime.Repositories
                                                   .Select(ea => ea.EmployeeAssignmentId).ToListAsync();
                 if(!employeeAssignmentIds.Any())
                 {
-                    throw new KeyNotFoundException($"Active assignment not found for ROIC {req.Roic} on {req.AttendanceDate}.");
+                    return null;
                 }
                 foreach(var employeeAssignmentId in employeeAssignmentIds)
                 {
@@ -67,22 +65,23 @@ namespace FireTime.Repositories
             var attendance = await _context.Attendances.Where(att => att.DeletedInd == false && att.AttendanceId == id).FirstOrDefaultAsync();
             if(attendance == null)
             {
-                throw new KeyNotFoundException($"Attendance record with ID {id} not found");
+                return null;
             }
             if(updateAttendanceRequest.AttendanceDate.HasValue && updateAttendanceRequest.AttendanceDate.Value != default)
-            {
-                attendance.AttendanceDate = updateAttendanceRequest.AttendanceDate.Value;
-                attendance.EmployeeAssignmentId = await _context.EmployeeAssignments
+            {                
+                var assignmentId = await _context.EmployeeAssignments
                     .Where(ea => ea.Roic == attendance.Roic &&
                                  ea.AssignmentStartDate <= updateAttendanceRequest.AttendanceDate.Value &&
                                  (ea.AssignmentEndDate == null || ea.AssignmentEndDate >= updateAttendanceRequest.AttendanceDate.Value) &&
                                  !ea.DeletedInd)
                     .Select(ea => ea.EmployeeAssignmentId)
                     .FirstOrDefaultAsync();
-                if(attendance.EmployeeAssignmentId == 0)
+                if(assignmentId == 0)
                 {
-                    throw new KeyNotFoundException($"Active assignment not found for ROIC {attendance.Roic} on {updateAttendanceRequest.AttendanceDate.Value}.");
+                   return null;
                 }
+                attendance.EmployeeAssignmentId= assignmentId;
+                attendance.AttendanceDate = updateAttendanceRequest.AttendanceDate.Value;
             }
             if(updateAttendanceRequest.AttendanceStatusId.HasValue && updateAttendanceRequest.AttendanceStatusId.Value != 0)
             {
