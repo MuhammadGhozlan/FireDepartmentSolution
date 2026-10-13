@@ -21,8 +21,7 @@ public sealed record AttendanceFilterRequest(
     DateOnly? EndDate
     );
 public sealed record UpdateAttendanceRequest(     
-    DateOnly? AttendanceDate,
-    string? Roic,
+    DateOnly? AttendanceDate,     
     [Range(1, int.MaxValue, ErrorMessage = "A valid AttendanceStatusId is required.")]
     int? AttendanceStatusId,
     string? AttendanceComments    

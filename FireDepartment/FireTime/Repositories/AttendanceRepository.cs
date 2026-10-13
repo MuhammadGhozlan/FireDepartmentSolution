@@ -79,6 +79,10 @@ namespace FireTime.Repositories
                                  !ea.DeletedInd)
                     .Select(ea => ea.EmployeeAssignmentId)
                     .FirstOrDefaultAsync();
+                if(attendance.EmployeeAssignmentId == 0)
+                {
+                    throw new KeyNotFoundException($"Active assignment not found for ROIC {attendance.Roic} on {updateAttendanceRequest.AttendanceDate.Value}.");
+                }
             }
             if(updateAttendanceRequest.AttendanceStatusId.HasValue && updateAttendanceRequest.AttendanceStatusId.Value != 0)
             {
@@ -88,6 +92,9 @@ namespace FireTime.Repositories
             {
                 attendance.AttendanceComments = updateAttendanceRequest.AttendanceComments;
             }
+            attendance.LastUpdateDate = DateTime.Now;
+            attendance.LastUpdateBy = "System";
+            await _context.SaveChangesAsync();  
             return _mapper.Map<AttendanceResponse>(attendance);
 
         }
