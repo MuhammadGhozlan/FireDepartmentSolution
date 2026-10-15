@@ -21,6 +21,14 @@ namespace FireTime.Repositories
 
         public async Task<List<AttendanceResponse>?> TakeAttendance(List<AttendanceRequest> attendanceRequestList)
         {
+            var hasPayloadDuplicates = attendanceRequestList
+                                      .GroupBy(r => new { r.Roic, r.AttendanceDate })
+                                      .Any(g => g.Count() > 1);
+
+            if(hasPayloadDuplicates)
+            {
+                throw new ArgumentException("The request contains duplicate entries for the same ROIC and date.");
+            }
             var attendanceList = new List<Attendance>();
             foreach(var request in attendanceRequestList)
             {
@@ -59,6 +67,7 @@ namespace FireTime.Repositories
                     }
                     assignmentId = activeAssignments.First().EmployeeAssignmentId;
                 }
+
                 var attendanceExists = await _context.Attendances.AnyAsync(att => att.Roic == request.Roic
                                                                            && att.AttendanceDate == request.AttendanceDate
                                                                            && !att.DeletedInd
@@ -131,7 +140,16 @@ namespace FireTime.Repositories
 
                     attendance.EmployeeAssignmentId = activeAssignments.First();
                 }
+                var isDuplicate = await _context.Attendances.AnyAsync(att =>
+                                  !att.DeletedInd
+                                  && att.AttendanceId != id
+                                  && att.EmployeeAssignmentId == attendance.EmployeeAssignmentId
+                                  && att.AttendanceDate == targetDate);
 
+                if(isDuplicate)
+                {
+                    throw new InvalidOperationException($"An attendance record already exists for ROIC {attendance.Roic} on {targetDate}.");
+                }
                 attendance.AttendanceDate = targetDate;
             }
             if(updateAttendanceRequest.AttendanceStatusId.HasValue && updateAttendanceRequest.AttendanceStatusId.Value != 0)
@@ -242,7 +260,7 @@ namespace FireTime.Repositories
         }
         public async Task<List<AttendanceStatusResponse>> GetAttendanceStatus()
         {
-            return  _mapper.Map<List<AttendanceStatusResponse>> (await _context.AttendanceStatuses.ToListAsync());
+            return _mapper.Map<List<AttendanceStatusResponse>>(await _context.AttendanceStatuses.ToListAsync());
         }
 
     }

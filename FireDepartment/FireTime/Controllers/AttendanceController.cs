@@ -1,6 +1,6 @@
 ﻿using FireTime.Dtos.Attendance;
+using FireTime.Dtos.Lookups;
 using FireTime.Interfaces.Service_Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FireTime.Controllers
@@ -33,6 +33,10 @@ namespace FireTime.Controllers
             catch(KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
+            }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
         [HttpPost("filterAttendance")]
