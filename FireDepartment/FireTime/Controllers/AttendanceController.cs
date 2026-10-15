@@ -59,6 +59,10 @@ namespace FireTime.Controllers
             {
                 return NotFound(ex.Message);
             }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         [HttpDelete("deleteAttendance/{id}")]
         public async Task<ActionResult<AttendanceResponse>> DeleteAttendance(int id)

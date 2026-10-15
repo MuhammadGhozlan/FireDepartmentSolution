@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using FireTime.Dtos.Attendance;
 using FireTime.Dtos.Lookups;
 using FireTime.Interfaces.Repo_Interfaces;
@@ -20,15 +21,7 @@ namespace FireTime.Repositories
         public async Task<List<AttendanceResponse>> GetAllAttendance() => _mapper.Map<List<AttendanceResponse>>(await _context.Attendances.Where(att => att.DeletedInd == false).ToListAsync());
 
         public async Task<List<AttendanceResponse>?> TakeAttendance(List<AttendanceRequest> attendanceRequestList)
-        {
-            var hasPayloadDuplicates = attendanceRequestList
-                                      .GroupBy(r => new { r.Roic, r.AttendanceDate })
-                                      .Any(g => g.Count() > 1);
-
-            if(hasPayloadDuplicates)
-            {
-                throw new ArgumentException("The request contains duplicate entries for the same ROIC and date.");
-            }
+        {           
             var attendanceList = new List<Attendance>();
             foreach(var request in attendanceRequestList)
             {
@@ -48,7 +41,6 @@ namespace FireTime.Repositories
                         throw new KeyNotFoundException($"No active assignment found for ROIC {request.Roic} on {request.AttendanceDate}.");
                     }
                     assignmentId = request.EmployeeAssignmentId!.Value;
-
                 }
                 else
                 {
@@ -66,6 +58,10 @@ namespace FireTime.Repositories
                         throw new InvalidOperationException($"Multiple active assignments found for ROIC {request.Roic} on {request.AttendanceDate}.");
                     }
                     assignmentId = activeAssignments.First().EmployeeAssignmentId;
+                }
+                if(attendanceList.Any(a => a.EmployeeAssignmentId == assignmentId && a.AttendanceDate == request.AttendanceDate))
+                {
+                    throw new ArgumentException($"Duplicate entry in request for assignment ID {assignmentId} on {request.AttendanceDate}.");
                 }
 
                 var attendanceExists = await _context.Attendances.AnyAsync(att => att.Roic == request.Roic
