@@ -11,5 +11,7 @@ namespace FireTime.Interfaces.Repo_Interfaces
         Task<AttendanceResponse?> UpdateAttendance(UpdateAttendanceRequest updateAttendanceRequest, int id);
         Task<AttendanceResponse?> DeleteAttendance(int id);
         Task<List<AttendanceResponse>> FilterAttendance(AttendanceFilterRequest attendanceFilterRequest);
+        Task<List<DailyRosterResponse>> GetDailyRoster(DateOnly date, int WorkPeriodNbr);
+        Task<List<AttendanceStatusResponse>> GetAttendanceStatus();
     }
 }

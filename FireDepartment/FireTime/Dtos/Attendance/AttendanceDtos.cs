@@ -1,3 +1,4 @@
+using FireTime.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace FireTime.Dtos.Attendance;
@@ -35,3 +36,10 @@ public sealed record AttendanceResponse(
     int AttendanceStatusId,
     string? AttendanceComments,
     bool? DeletedInd);
+
+public sealed record DailyRosterResponse(
+     int EmployeeAssignmentId,
+     string Roic,
+     int WorkPeriodNbr,
+     AttendanceResponse? Attendance);
+     

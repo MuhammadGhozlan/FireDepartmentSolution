@@ -1,4 +1,5 @@
 ﻿using FireTime.Dtos.Attendance;
+using FireTime.Dtos.Lookups;
 using FireTime.Interfaces.Repo_Interfaces;
 using FireTime.Interfaces.Service_Interfaces;
 
@@ -53,7 +54,7 @@ namespace FireTime.Services
         public async Task<List<AttendanceResponse>> TakeAttendance(List<AttendanceRequest> attendanceRequestList)
         {
             var attendees = await _attendanceRepository.TakeAttendance(attendanceRequestList);
-            if(attendees.Count == 0)
+            if(attendees!.Count == 0)
             {
                 _logger.LogInformation("No attendance records have been taken.");
             }
@@ -74,6 +75,24 @@ namespace FireTime.Services
                 throw new KeyNotFoundException($"Attendance record with ID {id} not found."); 
             }
             return attendant;
+        }
+        public async Task<List<DailyRosterResponse>> GetDailyRoster(DateOnly date, int workPeriodNbr)
+        {
+            var dailyRoster = await _attendanceRepository.GetDailyRoster(date, workPeriodNbr);
+            if(dailyRoster.Count == 0)
+            {
+                _logger.LogInformation("No daily roster records found.");
+            }
+            return dailyRoster;
+        }
+        public async Task<List<AttendanceStatusResponse>> GetAttendanceStatus()
+        {
+            var attendanceStatusList = await _attendanceRepository.GetAttendanceStatus();
+            if(attendanceStatusList.Count == 0)
+            {
+                _logger.LogInformation("No attendance status records found.");
+            }
+            return attendanceStatusList;
         }
     }
 }

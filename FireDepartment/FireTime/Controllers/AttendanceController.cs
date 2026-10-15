@@ -72,5 +72,18 @@ namespace FireTime.Controllers
                 return NotFound(ex.Message);
             }
         }
+        [HttpGet("daily-roster")]
+        public async Task<ActionResult<List<DailyRosterResponse>>> GetDailyRoster([FromQuery] DateOnly date, [FromQuery] int workPeriodNbr)
+        {
+            var roster = await _attendanceService.GetDailyRoster(date, workPeriodNbr);
+            return Ok(roster);
+        }
+
+        [HttpGet("status")]
+        public async Task<ActionResult<List<AttendanceStatusResponse>>> GetAttendanceStatus()
+        {
+            var statuses = await _attendanceService.GetAttendanceStatus();
+            return Ok(statuses);
+        }
     }
 }
