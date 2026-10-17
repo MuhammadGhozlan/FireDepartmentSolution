@@ -9,7 +9,11 @@ public sealed record CreateEmployeeRequest(
     string? Suffix,
     bool Paramedic,
     bool Hazmat,
-    string EmployeeStatusCde);
+    string EmployeeStatusCde,
+    DateOnly? BirthDate,
+    string? SocialSecurityNbr,
+    string? MaritalStatusCde
+    );
 
 public sealed record UpdateEmployeeRequest(
     string FirstNme,
@@ -36,7 +40,10 @@ public sealed record EmployeeDetailResponse(
     string? Suffix,
     bool Paramedic,
     bool Hazmat,
-    string EmployeeStatusCde);
+    string EmployeeStatusCde,
+    DateOnly? BirthDate,
+    string? SocialSecurityNbr,
+    string? MaritalStatusCde);
 
 public sealed record EmployeeAssignmentRequest(
     DateOnly AssignmentStartDate,

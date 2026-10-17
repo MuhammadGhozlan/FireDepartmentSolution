@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FireTime.Dtos.Attendance;
+using FireTime.Dtos.Employees;
 using FireTime.Dtos.Lookups;
 using FireTime.Models;
 
@@ -13,6 +14,9 @@ namespace FireTime.Dtos
                                                              .ForMember(dest => dest.DeletedInd, opt => opt.Ignore());
             CreateMap<Models.Attendance, AttendanceResponse>();
             CreateMap<AttendanceStatus, AttendanceStatusResponse>();
+
+            CreateMap<CreateEmployeeRequest, Employee>();
+            CreateMap<Employee, EmployeeDetailResponse>();
         }
     }
 }
