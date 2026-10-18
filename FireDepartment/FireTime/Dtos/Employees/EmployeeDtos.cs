@@ -12,7 +12,11 @@ public sealed record CreateEmployeeRequest(
     string EmployeeStatusCde,
     DateOnly? BirthDate,
     string? SocialSecurityNbr,
-    string? MaritalStatusCde
+    string? MaritalStatusCde,
+    DateTime CreatedDate = default,
+    string CreatedBy = "System",
+    DateTime LastUpdateDate = default,
+    string LastUpdateBy = "System"
     );
 
 public sealed record UpdateEmployeeRequest(
@@ -24,7 +28,9 @@ public sealed record UpdateEmployeeRequest(
     bool Hazmat,
     string EmployeeStatusCde,
     DateOnly? BirthDate,
-    string? MaritalStatusCde
+    string? MaritalStatusCde,
+    DateTime LastUpdateDate = default,
+    string LastUpdateBy = "System"
     );
 
 public sealed record EmployeeSummaryResponse(
@@ -44,8 +50,13 @@ public sealed record EmployeeDetailResponse(
     bool Paramedic,
     bool Hazmat,
     string EmployeeStatusCde,
-    DateOnly? BirthDate,   
-    string? MaritalStatusCde);
+    DateOnly? BirthDate,
+    string? MaritalStatusCde,
+    DateTime CreatedDate,
+    string CreatedBy,
+    DateTime LastUpdateDate,
+    string LastUpdateBy
+    );
 
 public sealed record EmployeeAssignmentRequest(
     DateOnly AssignmentStartDate,

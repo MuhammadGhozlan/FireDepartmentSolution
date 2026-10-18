@@ -22,6 +22,7 @@ namespace FireTime.Repositories
             var exists = await _context.Employees.AnyAsync(e => e.Roic == employee.Roic || e.EmployeeNbr == employee.EmployeeNbr);
             if(exists) throw new InvalidOperationException($"Employee with ROIC {employee.Roic} or Employee Number {employee.EmployeeNbr} already exists.");
             await _context.Employees.AddAsync(newEmployee);
+            await _context.SaveChangesAsync();
             return _mapper.Map<EmployeeDetailResponse>(newEmployee);
         }
 
@@ -77,6 +78,14 @@ namespace FireTime.Repositories
             if(employee.MaritalStatusCde != query.MaritalStatusCde)
             {
                 query.MaritalStatusCde = employee.MaritalStatusCde;
+            }
+            if(employee.LastUpdateBy != query.LastUpdateBy)
+            {
+                query.LastUpdateBy = employee.LastUpdateBy;
+            }
+            if(employee.LastUpdateDate != query.LastUpdateDate)
+            {
+                query.LastUpdateDate = employee.LastUpdateDate;
             }
             await _context.SaveChangesAsync();
             var result = _mapper.Map<EmployeeDetailResponse>(query);
