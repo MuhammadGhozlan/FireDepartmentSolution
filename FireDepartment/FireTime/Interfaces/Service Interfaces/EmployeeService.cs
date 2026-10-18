@@ -3,7 +3,7 @@ using FireTime.Interfaces.Repo_Interfaces;
 
 namespace FireTime.Interfaces.Service_Interfaces
 {
-    public class EmployeeService: IEmployeeService
+    public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _employeeRepository;
 

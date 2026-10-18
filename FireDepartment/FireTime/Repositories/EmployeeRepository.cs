@@ -63,6 +63,18 @@ namespace FireTime.Repositories
                 {
                     query.LastNme = employee.LastNme;
                 }
+                if(employee.Suffix != query.Suffix)
+                {
+                    query.Suffix = employee.Suffix;
+                }
+                if(employee.BirthDate != query.BirthDate)
+                {
+                    query.BirthDate = employee.BirthDate;
+                }
+                if(employee.MaritalStatusCde != query.MaritalStatusCde)
+                {
+                    query.MaritalStatusCde = employee.MaritalStatusCde;
+                }
             }
             var result=_mapper.Map< EmployeeDetailResponse >(query);
 

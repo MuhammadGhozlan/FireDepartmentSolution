@@ -22,7 +22,10 @@ public sealed record UpdateEmployeeRequest(
     string? Suffix,
     bool Paramedic,
     bool Hazmat,
-    string EmployeeStatusCde);
+    string EmployeeStatusCde,
+    DateOnly? BirthDate,
+    string? MaritalStatusCde
+    );
 
 public sealed record EmployeeSummaryResponse(
     string Roic,
@@ -41,8 +44,7 @@ public sealed record EmployeeDetailResponse(
     bool Paramedic,
     bool Hazmat,
     string EmployeeStatusCde,
-    DateOnly? BirthDate,
-    string? SocialSecurityNbr,
+    DateOnly? BirthDate,   
     string? MaritalStatusCde);
 
 public sealed record EmployeeAssignmentRequest(
