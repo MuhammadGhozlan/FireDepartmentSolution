@@ -13,9 +13,9 @@ public sealed record CreateEmployeeRequest(
     DateOnly? BirthDate,
     string? SocialSecurityNbr,
     string? MaritalStatusCde,
-    DateTime CreatedDate = default,
-    string CreatedBy = "System",
-    DateTime LastUpdateDate = default,
+    DateTime CreatedDate,
+    DateTime LastUpdateDate,
+    string CreatedBy = "System",    
     string LastUpdateBy = "System"
     );
 

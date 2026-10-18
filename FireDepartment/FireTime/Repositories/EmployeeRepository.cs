@@ -21,6 +21,10 @@ namespace FireTime.Repositories
             var newEmployee = _mapper.Map<Employee>(employee);
             var exists = await _context.Employees.AnyAsync(e => e.Roic == employee.Roic || e.EmployeeNbr == employee.EmployeeNbr);
             if(exists) throw new InvalidOperationException($"Employee with ROIC {employee.Roic} or Employee Number {employee.EmployeeNbr} already exists.");
+            if(employee.CreatedBy == null) newEmployee.CreatedBy = "System";
+            if(employee.CreatedDate == default) newEmployee.CreatedDate = DateTime.UtcNow;
+            if(employee.LastUpdateBy == null) newEmployee.CreatedBy = "System";
+            if(employee.LastUpdateDate == default) newEmployee.CreatedDate = DateTime.UtcNow; ;
             await _context.Employees.AddAsync(newEmployee);
             await _context.SaveChangesAsync();
             return _mapper.Map<EmployeeDetailResponse>(newEmployee);
@@ -86,6 +90,10 @@ namespace FireTime.Repositories
             if(employee.LastUpdateDate != query.LastUpdateDate)
             {
                 query.LastUpdateDate = employee.LastUpdateDate;
+            }
+            else
+            {
+                query.LastUpdateDate = DateTime.UtcNow;
             }
             await _context.SaveChangesAsync();
             var result = _mapper.Map<EmployeeDetailResponse>(query);
