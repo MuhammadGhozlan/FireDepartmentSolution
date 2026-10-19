@@ -87,7 +87,7 @@ namespace FireTime.Repositories
             }
            
             query.LastUpdateBy = "System";
-            query.LastUpdateDate = DateTime.Now;
+            query.LastUpdateDate = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             var result = _mapper.Map<EmployeeDetailResponse>(query);
 
