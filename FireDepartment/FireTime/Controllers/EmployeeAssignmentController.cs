@@ -72,16 +72,12 @@ namespace FireTime.Controllers
             try
             {
                 var result = await _service.CreateEmployeeAssignment(request);
-                return CreatedAtAction(
-                    nameof(GetEmployeeAssignmentById),
-                    new { roic = result.Roic, assignmentId = result.EmployeeAssignmentId },
-                    result
-                );
+                return Ok(result);
             }
             catch(InvalidOperationException ex)
             {
                 return BadRequest(ex.Message);
-            }
+            }             
             catch(Exception ex)
             {
                 return StatusCode(500, ex.Message);
@@ -95,6 +91,10 @@ namespace FireTime.Controllers
             {
                 var result = await _service.UpdateEmployeeAssignment(request, assignmentId);
                 return Ok(result);
+            }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch(KeyNotFoundException ex)
             {

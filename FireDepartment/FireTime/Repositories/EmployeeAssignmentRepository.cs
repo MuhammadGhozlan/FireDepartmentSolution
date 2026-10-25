@@ -33,7 +33,7 @@ namespace FireTime.Repositories
             await _context.EmployeeAssignments.AddAsync(employeeAssignment);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<EmployeeAssignmentResponse>(employeeAssignment);
+            return await MapToResponse(employeeAssignment);
         }
 
         public async Task<bool> DeleteEmployeeAssignment(EmployeeAssignmentRequest request, int assignmentId)
@@ -52,7 +52,7 @@ namespace FireTime.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
-      
+
 
         public async Task<EmployeeAssignmentResponse> GetEmployeeAssignmentById(string roic, int assignmentId)
         {
@@ -97,7 +97,12 @@ namespace FireTime.Repositories
                 throw new ArgumentNullException(nameof(roic), " cannot pass null argument: roic");
             }
             var employeeAssignments = await _context.EmployeeAssignments.Where(ea => ea.Roic == roic && !ea.DeletedInd).ToListAsync();
-            return _mapper.Map<List<EmployeeAssignmentResponse>>(employeeAssignments);
+            var empAssignmentsList = new List<EmployeeAssignmentResponse>();
+            foreach(var employeeAssignment in employeeAssignments)
+            {
+                empAssignmentsList.Add(await MapToResponse(employeeAssignment));
+            }
+            return empAssignmentsList;
         }
 
         public async Task<EmployeeAssignmentResponse> UpdateEmployeeAssignment(EmployeeAssignmentRequest request, int assignmentId)
@@ -108,6 +113,10 @@ namespace FireTime.Repositories
             {
                 throw new InvalidOperationException("Assignment end date cannot be earlier than start date.");
             }
+            var isOrphaned = await _context.Attendances.AnyAsync(att => att.EmployeeAssignmentId == assignmentId && !att.DeletedInd &&
+                  (request.AssignmentEndDate < att.AttendanceDate || request.AssignmentStartDate > att.AttendanceDate));
+
+            if(isOrphaned) throw new InvalidOperationException("cannot update assignment dates because attendance records exist outside the new date range.");
 
             if(request.AssignmentStartDate != employeeAssignment.AssignmentStartDate)
             {
@@ -133,7 +142,27 @@ namespace FireTime.Repositories
             employeeAssignment.LastUpdateDate = DateTime.Now;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<EmployeeAssignmentResponse>(employeeAssignment);
+            return await MapToResponse(employeeAssignment);
+        }
+
+        private async Task<EmployeeAssignmentResponse> MapToResponse(EmployeeAssignment ea)
+        {
+            var companyPosition = await _context.CompanyPositions
+                                          .Include(cp => cp.Company)
+                                          .ThenInclude(cp => cp.Station)
+                                          .FirstOrDefaultAsync(cp => cp.CompanyPositionId == ea.CompanyPositionId);
+            return new EmployeeAssignmentResponse
+            (
+               ea.EmployeeAssignmentId,
+               ea.AssignmentStartDate,
+               ea.AssignmentEndDate,
+               ea.IsTemp,
+               ea.Roic,
+               ea.CompanyPositionId,
+               ea.WorkPeriodId,
+               companyPosition?.Company?.CompanyNme ?? string.Empty,
+               companyPosition?.Company?.Station?.StationNbr
+            );
         }
     }
 }
