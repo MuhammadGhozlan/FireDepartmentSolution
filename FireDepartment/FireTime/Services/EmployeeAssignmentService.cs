@@ -29,6 +29,6 @@ namespace FireTime.Services
             await _repository.UpdateEmployeeAssignment(request, assignmentId);
 
         public async Task<bool> DeleteEmployeeAssignment(string roic, int assignmentId) =>
-            await _repository.DeleteEmployeeAssignment(request, assignmentId);
+            await _repository.DeleteEmployeeAssignment(roic, assignmentId);
     }
 }
