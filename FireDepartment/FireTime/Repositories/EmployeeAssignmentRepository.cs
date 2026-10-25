@@ -45,6 +45,13 @@ namespace FireTime.Repositories
             if(employeeAssignment == null)
                 throw new KeyNotFoundException($"No employee assignment found for ID {assignmentId} and ROIC {request.Roic}.");
 
+            var activeAttendance = await _context.Attendances.AnyAsync(att => !att.DeletedInd
+                                            && att.EmployeeAssignmentId == employeeAssignment.EmployeeAssignmentId
+                                            );
+
+            if(activeAttendance) throw new InvalidOperationException("cannot delete this assignment because it is related to an active assignment");
+
+
             employeeAssignment.DeletedInd = true;
             employeeAssignment.LastUpdateBy = "System";
             employeeAssignment.LastUpdateDate = DateTime.Now;
@@ -63,7 +70,7 @@ namespace FireTime.Repositories
             if(employeeAssignment == null)
                 throw new KeyNotFoundException($"No employee assignment found for ID {assignmentId} and ROIC {roic}.");
 
-            return _mapper.Map<EmployeeAssignmentResponse>(employeeAssignment);
+            return await MapToResponse(employeeAssignment);
         }
 
         public async Task<List<EmployeeAssignmentResponse>> GetEmployeeAssignments()
