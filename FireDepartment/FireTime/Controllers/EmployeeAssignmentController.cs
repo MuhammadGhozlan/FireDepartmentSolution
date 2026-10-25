@@ -106,7 +106,7 @@ namespace FireTime.Controllers
             }
         }
 
-        [HttpDelete("deleteEmployeeAssignment/{assignmentId}")]
+        [HttpDelete("deleteEmployeeAssignment/{roic}/{assignmentId}")]
         public async Task<IActionResult> DeleteEmployeeAssignment(string roic, int assignmentId)
         {
             try
