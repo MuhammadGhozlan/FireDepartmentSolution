@@ -10,7 +10,7 @@ namespace FireTime.Interfaces.Repo_Interfaces
         Task<EmployeeAssignmentResponse> GetEmployeeAssignmentById(string roic, int assignmentId);
         Task<EmployeeAssignmentResponse> CreateEmployeeAssignment(EmployeeAssignmentRequest request);
         Task<EmployeeAssignmentResponse> UpdateEmployeeAssignment(EmployeeAssignmentRequest request, int assignmentId);
-        Task<bool> DeleteEmployeeAssignment(EmployeeAssignmentRequest request, int assignmentId);
+        Task<bool> DeleteEmployeeAssignment(string roic, int assignmentId);
 
     }
 }

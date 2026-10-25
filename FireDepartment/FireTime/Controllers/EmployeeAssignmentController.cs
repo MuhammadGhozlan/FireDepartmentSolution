@@ -107,12 +107,16 @@ namespace FireTime.Controllers
         }
 
         [HttpDelete("deleteEmployeeAssignment/{assignmentId}")]
-        public async Task<IActionResult> DeleteEmployeeAssignment([FromBody] EmployeeAssignmentRequest request, int assignmentId)
+        public async Task<IActionResult> DeleteEmployeeAssignment(string roic, int assignmentId)
         {
             try
             {
-                await _service.DeleteEmployeeAssignment(request, assignmentId);
+                await _service.DeleteEmployeeAssignment(roic, assignmentId);
                 return NoContent();
+            }
+            catch(InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
             }
             catch(KeyNotFoundException ex)
             {

@@ -36,21 +36,21 @@ namespace FireTime.Repositories
             return await MapToResponse(employeeAssignment);
         }
 
-        public async Task<bool> DeleteEmployeeAssignment(EmployeeAssignmentRequest request, int assignmentId)
+        public async Task<bool> DeleteEmployeeAssignment(string roic, int assignmentId)
         {
             var employeeAssignment = await _context.EmployeeAssignments
-                                           .Where(ea => ea.Roic == request.Roic && ea.EmployeeAssignmentId == assignmentId && !ea.DeletedInd)
+                                           .Where(ea => ea.Roic == roic && ea.EmployeeAssignmentId == assignmentId && !ea.DeletedInd)
                                            .FirstOrDefaultAsync();
 
             if(employeeAssignment == null)
-                throw new KeyNotFoundException($"No employee assignment found for ID {assignmentId} and ROIC {request.Roic}.");
+                throw new KeyNotFoundException($"No employee assignment found for ID {assignmentId} and ROIC {roic}.");
 
             var activeAttendance = await _context.Attendances.AnyAsync(att => !att.DeletedInd
                                             && att.EmployeeAssignmentId == employeeAssignment.EmployeeAssignmentId
                                             );
 
-            if(activeAttendance) throw new InvalidOperationException("cannot delete this assignment because it is related to an active assignment");
-
+            if(activeAttendance) throw new InvalidOperationException("cannot delete this assignment because it is related to an active attendance");
+            
 
             employeeAssignment.DeletedInd = true;
             employeeAssignment.LastUpdateBy = "System";
