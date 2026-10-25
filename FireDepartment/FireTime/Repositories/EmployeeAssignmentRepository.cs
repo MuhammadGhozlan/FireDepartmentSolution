@@ -19,6 +19,10 @@ namespace FireTime.Repositories
         public async Task<EmployeeAssignmentResponse> CreateEmployeeAssignment(EmployeeAssignmentRequest request)
         {
             var employeeAssignment = _mapper.Map<EmployeeAssignment>(request);
+            if(request.AssignmentEndDate.HasValue && request.AssignmentEndDate < request.AssignmentStartDate)
+            {
+                throw new InvalidOperationException("Assignment end date cannot be earlier than start date.");
+            }
 
             employeeAssignment.Roic = request.Roic;
             employeeAssignment.CreatedBy = "System";
@@ -50,14 +54,14 @@ namespace FireTime.Repositories
         }
       
 
-        public async Task<EmployeeAssignmentResponse> GetEmployeeAssignmentById(EmployeeAssignmentRequest request, int assignmentId)
+        public async Task<EmployeeAssignmentResponse> GetEmployeeAssignmentById(string roic, int assignmentId)
         {
             var employeeAssignment = await _context.EmployeeAssignments
-                                           .Where(ea => ea.Roic == request.Roic && ea.EmployeeAssignmentId == assignmentId && !ea.DeletedInd)
+                                           .Where(ea => ea.Roic == roic && ea.EmployeeAssignmentId == assignmentId && !ea.DeletedInd)
                                            .FirstOrDefaultAsync();
 
             if(employeeAssignment == null)
-                throw new KeyNotFoundException($"No employee assignment found for ID {assignmentId} and ROIC {request.Roic}.");
+                throw new KeyNotFoundException($"No employee assignment found for ID {assignmentId} and ROIC {roic}.");
 
             return _mapper.Map<EmployeeAssignmentResponse>(employeeAssignment);
         }
@@ -100,6 +104,10 @@ namespace FireTime.Repositories
         {
             var employeeAssignment = await _context.EmployeeAssignments.Where(ea => ea.Roic == request.Roic && ea.EmployeeAssignmentId == assignmentId && !ea.DeletedInd).FirstOrDefaultAsync();
             if(employeeAssignment == null) throw new KeyNotFoundException($"no employee assignment for the given roic: {request.Roic}");
+            if(request.AssignmentEndDate.HasValue && request.AssignmentEndDate < request.AssignmentStartDate)
+            {
+                throw new InvalidOperationException("Assignment end date cannot be earlier than start date.");
+            }
 
             if(request.AssignmentStartDate != employeeAssignment.AssignmentStartDate)
             {

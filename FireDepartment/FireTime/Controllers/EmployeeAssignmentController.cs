@@ -16,7 +16,7 @@ namespace FireTime.Controllers
             _service = service;
         }
 
-        [HttpGet]
+        [HttpGet("getEmployeeAssignments")]
         public async Task<ActionResult<List<EmployeeAssignmentResponse>>> GetEmployeeAssignments()
         {
             try
@@ -30,7 +30,7 @@ namespace FireTime.Controllers
             }
         }
 
-        [HttpGet("employee/{roic}")]
+        [HttpGet("getEmployeeAssignmentsByEmployeeNbr/{roic}")]
         public async Task<ActionResult<List<EmployeeAssignmentResponse>>> GetEmployeeAssignmentsByEmployeeNbr(string roic)
         {
             try
@@ -48,12 +48,12 @@ namespace FireTime.Controllers
             }
         }
 
-        [HttpGet("{assignmentId}")]
-        public async Task<ActionResult<EmployeeAssignmentResponse>> GetEmployeeAssignmentById([FromBody] EmployeeAssignmentRequest request, int assignmentId)
+        [HttpGet("getEmployeeAssignmentById/{roic}/{assignmentId}")]
+        public async Task<ActionResult<EmployeeAssignmentResponse>> GetEmployeeAssignmentById(string roic, int assignmentId)
         {
             try
             {
-                var result = await _service.GetEmployeeAssignmentById(request, assignmentId);
+                var result = await _service.GetEmployeeAssignmentById(roic, assignmentId);
                 return Ok(result);
             }
             catch(KeyNotFoundException ex)
@@ -66,13 +66,17 @@ namespace FireTime.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("createEmployeeAssignment")]
         public async Task<ActionResult<EmployeeAssignmentResponse>> CreateEmployeeAssignment([FromBody] EmployeeAssignmentRequest request)
         {
             try
             {
                 var result = await _service.CreateEmployeeAssignment(request);
-                return CreatedAtAction(nameof(GetEmployeeAssignmentById), new { assignmentId = result.EmployeeAssignmentId }, result);
+                return CreatedAtAction(
+                    nameof(GetEmployeeAssignmentById),
+                    new { roic = result.Roic, assignmentId = result.EmployeeAssignmentId },
+                    result
+                );
             }
             catch(InvalidOperationException ex)
             {
@@ -84,7 +88,7 @@ namespace FireTime.Controllers
             }
         }
 
-        [HttpPut("{assignmentId}")]
+        [HttpPut("updateEmployeeAssignment/{assignmentId}")]
         public async Task<ActionResult<EmployeeAssignmentResponse>> UpdateEmployeeAssignment([FromBody] EmployeeAssignmentRequest request, int assignmentId)
         {
             try
@@ -102,7 +106,7 @@ namespace FireTime.Controllers
             }
         }
 
-        [HttpDelete("{assignmentId}")]
+        [HttpDelete("deleteEmployeeAssignment/{assignmentId}")]
         public async Task<IActionResult> DeleteEmployeeAssignment([FromBody] EmployeeAssignmentRequest request, int assignmentId)
         {
             try

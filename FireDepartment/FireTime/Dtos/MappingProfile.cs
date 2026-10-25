@@ -17,6 +17,10 @@ namespace FireTime.Dtos
 
             CreateMap<CreateEmployeeRequest, Employee>();
             CreateMap<Employee, EmployeeDetailResponse>();
+
+            CreateMap<EmployeeAssignmentRequest, EmployeeAssignment>().ForMember(dest => dest.EmployeeAssignmentId, opt => opt.Ignore())
+                                                                      .ForMember(dest => dest.DeletedInd, opt => opt.Ignore());
+            CreateMap<EmployeeAssignment, EmployeeAssignmentResponse>();
         }
     }
 }

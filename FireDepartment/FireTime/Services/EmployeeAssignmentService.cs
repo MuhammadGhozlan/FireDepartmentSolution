@@ -19,8 +19,8 @@ namespace FireTime.Services
         public async Task<List<EmployeeAssignmentResponse>> GetEmployeeAssignmentsByEmployeeNbr(string roic) =>
             await _repository.GetEmployeeAssignmentsByEmployeeNbr(roic);
 
-        public async Task<EmployeeAssignmentResponse> GetEmployeeAssignmentById(EmployeeAssignmentRequest request, int assignmentId) =>
-            await _repository.GetEmployeeAssignmentById(request, assignmentId);
+        public async Task<EmployeeAssignmentResponse> GetEmployeeAssignmentById(string roic, int assignmentId) =>
+            await _repository.GetEmployeeAssignmentById(roic, assignmentId);
 
         public async Task<EmployeeAssignmentResponse> CreateEmployeeAssignment(EmployeeAssignmentRequest request) =>
             await _repository.CreateEmployeeAssignment(request);
