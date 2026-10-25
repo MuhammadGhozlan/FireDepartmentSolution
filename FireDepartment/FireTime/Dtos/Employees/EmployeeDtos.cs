@@ -29,7 +29,7 @@ public sealed record UpdateEmployeeRequest(
     string EmployeeStatusCde,
     DateOnly? BirthDate,
     string? MaritalStatusCde,
-    DateTime LastUpdateDate = default,
+    DateTime LastUpdateDate,
     string LastUpdateBy = "System"
     );
 
@@ -73,4 +73,6 @@ public sealed record EmployeeAssignmentResponse(
     bool IsTemp,
     string Roic,
     int CompanyPositionId,
-    int WorkPeriodId);
+    int WorkPeriodId,
+    string? CompanyName,
+    string? StationNbr);
