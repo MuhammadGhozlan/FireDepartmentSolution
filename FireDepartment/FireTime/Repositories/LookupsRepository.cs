@@ -22,7 +22,6 @@ namespace FireTime.Repositories
 
         public async Task<List<CompanyPositionDetailResponse>> GetAllCompanyPositions()
         {
-
             var query = from companyPosition in _context.CompanyPositions
                         join company in _context.Companies
                         on companyPosition.CompanyId equals company.CompanyId
@@ -33,16 +32,19 @@ namespace FireTime.Repositories
                         on companyPosition.ShiftId equals shift.ShiftId
                         join jobTitle in _context.JobTitles
                         on companyPosition.JobTitleId equals jobTitle.JobTitleId into jobTitleGroup
-                        from jobTitle in jobTitleGroup.DefaultIfEmpty()                        
+                        from jobTitle in jobTitleGroup.DefaultIfEmpty()
                         select new CompanyPositionDetailResponse
                         (
-                            companyPosition.CompanyPositionId,                             
-                            station.StationNbr,  
+                            companyPosition.CompanyPositionId,
+                            station != null ? station.StationNbr : null,
                             company.CompanyNme,
                             shift.ShiftNme,
-                            jobTitle.JobTitleShortDesc,
-                            companyPosition.TruckPosition
-
+                            jobTitle != null ? jobTitle.JobTitleShortDesc : null,
+                            companyPosition.TruckPosition,
+                            company.CompanyId,
+                            station != null ? station.StationId : (int?)null,
+                            companyPosition.JobTitleId,
+                            companyPosition.ShiftId
                         );
             return await query.AsNoTracking().OrderBy(cp => cp.CompanyPositionId).ToListAsync();
         }
