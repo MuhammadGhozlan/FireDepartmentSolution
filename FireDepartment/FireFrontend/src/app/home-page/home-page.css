@@ -1,0 +1,39 @@
+html, body{
+    height:100%
+}
+.angled-image {
+    transform: perspective(1000px) rotateY(-40deg) rotateX(1deg);
+    box-shadow: 10px 10px 20px rgba(0,0,0,0.3);
+    transition: transform 0.5s ease;
+    
+}
+
+.hero-bg {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                url('/assets/CityofTulsa.jpg');
+  background-size: 100% 100%;
+  background-position: center;
+  aspect-ratio: 4/2; ;
+  width:80%;
+  height:500px;
+}
+.btn-fire {
+    background: linear-gradient(180deg, #e63946 0%, #b91c1c 100%); 
+    border: 1px solid #991b1b;
+    color: white;
+    box-shadow: 0 4px 15px rgba(230, 57, 70, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-fire:hover {
+    background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
+    box-shadow: 0 6px 20px rgba(230, 57, 70, 0.6);
+    color: white;
+    transform: translateY(-1px);
+}
+h1{
+    padding-top:20%;
+    font-size: 200%;
+}
+.x-small { font-size: 0.75rem; }
+footer { background: rgba(0, 0, 0, 0.2); }

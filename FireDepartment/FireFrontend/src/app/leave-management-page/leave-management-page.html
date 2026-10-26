@@ -1,0 +1,81 @@
+<div class="container-fluid d-flex justify-content-center my-4">
+    <h1 class="text-white fw-bold">Leave Management</h1>
+</div>
+
+<div class="container-fluid w-75 d-flex justify-content-end p-0">
+    <ul class="nav nav-tabs border-0">
+        <li class="nav-item">
+            <a class="nav-link" 
+               [class.active]="activeTab === 'requests'" 
+               (click)="activeTab = 'requests'" 
+               href="javascript:void(0)">Leave Requests</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" 
+               [class.active]="activeTab === 'approvals'" 
+               (click)="activeTab = 'approvals'" 
+               href="javascript:void(0)">Approvals</a>
+        </li>
+    </ul>
+</div>
+
+<div class="container-fluid w-75 bg-dark border border-secondary p-2 mt-2">
+    <div class="d-flex align-items-center">
+        <span class="text-white ms-2">Search...</span>
+        <div class="input-group w-25 ms-auto">
+            <span class="input-group-text bg-secondary border-0">
+                <i class="bi bi-search text-white"></i>
+            </span>
+            <input type="text" class="form-control bg-dark text-white border-secondary shadow-none" placeholder="Search...">
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid w-75 mt-3 p-0">
+    
+    @if (activeTab === 'requests') {
+        <table class="table table-dark table-striped border border-secondary align-middle">
+            <thead>
+                <tr class="text-secondary">
+                    <th>Requested By <i class="bi bi-arrow-down-up float-end small"></i></th>
+                    <th>Leave Type <i class="bi bi-arrow-down-up float-end small"></i></th>
+                    <th>Status</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Daniel Smith</td>
+                    <td>Vacation Leave</td>
+                    <td><span class="badge rounded-pill bg-warning text-dark">Pending</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-info">View</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+
+    @if (activeTab === 'approvals') {
+        <table class="table table-dark table-striped border border-secondary align-middle">
+            <thead>
+                <tr class="text-secondary">
+                    <th>Requested By <i class="bi bi-arrow-down-up float-end small"></i></th>
+                    <th>Approver <i class="bi bi-arrow-down-up float-end small"></i></th>
+                    <th>Status</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John Stonen</td>
+                    <td>Jennifer Smith</td>
+                    <td><span class="badge rounded-pill bg-success">Approved</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-warning">Approve / Deny</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+</div>

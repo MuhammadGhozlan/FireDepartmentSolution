@@ -1,0 +1,65 @@
+<div class="main-container d-flex align-items-center mb-4">
+    <div class="container text-center">
+        <h1 class="text-white fw-bold drop-shadow"> Permanent Transfer Request</h1>
+    </div>
+</div>
+
+<div class="container-fluid justify-content-center input-group-text w-75">
+    <div class="d-flex align-items-center gap-3">
+        <div class="input-group w-75">
+            <span class="input-group-text bg-dark text-white border-secondary">Start Date</span>
+            <input type="date" class="form-control border-secondary">
+        </div>
+
+        <div class="input-group w-75">
+            <span class="input-group-text bg-dark text-white border-secondary">End Date</span>
+            <input type="date" class="form-control border-secondary">
+        </div>
+
+        <div class="input-group w-75">
+            <span class="input-group-text bg-dark text-white border-secondary">Status</span>
+            <select class="form-select border-secondary">
+                <option selected>All</option>
+                <option value="1">Pending</option>
+            </select>
+        </div>
+    </div>
+</div>
+<br />
+<div class="container-fluid border border-secondary border-light w-75 p-0">
+    <div class="d-flex align-items-center border" style="background-color: aliceblue; padding-left: -10%;">
+        <span class="text-black">Search ...</span>
+        <div class="input-group w-25 ms-auto bg-dark">
+            <span class="input-group-text border-secondary border-end-0">
+                <i class="bi bi-search" style="color:black;"></i>
+            </span>
+            <input type="text" class="form-control border-secondary border-start-0 bg-dark" placeholder="Search ...">
+        </div>
+    </div>
+    <div class="container-fluid w-75 mt-3">
+        <table class="border border-secondary border-light table table-striped">
+            <thead>
+                <tr>
+                    <th>Requested By <i class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th>From Assignment <i class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th>To Assignment <i class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th>Request Date<i class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th>Request Rank<i class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Daniel Smith</td>
+                    <td>Station 5, Company A</td>
+                    <td>Station 1, Company B</td>
+                    <td> 04/15/2026</td>
+                    <td>Fire Fighter</td>
+                    <td><i class="bi bi-hourglass">Pending</i></td>
+                    <td><button type="submit" class="btn btn-primary d-flex align-items-center" style="height: 30px; margin-bottom: 1%;"> Action</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
