@@ -27,18 +27,24 @@ namespace FireTime.Repositories
                         join company in _context.Companies
                         on companyPosition.CompanyId equals company.CompanyId
                         join station in _context.Stations
-                        on company.StationId equals station.StationId
+                        on company.StationId equals station.StationId into stationGroup
+                        from station in stationGroup.DefaultIfEmpty()
                         join shift in _context.Shifts
-                        on companyPosition.ShiftId equals shift.ShiftId                                              
-                        select new
-                        {
-                            companyPosition.CompanyPositionId,
+                        on companyPosition.ShiftId equals shift.ShiftId
+                        join jobTitle in _context.JobTitles
+                        on companyPosition.JobTitleId equals jobTitle.JobTitleId into jobTitleGroup
+                        from jobTitle in jobTitleGroup.DefaultIfEmpty()                        
+                        select new CompanyPositionDetailResponse
+                        (
+                            companyPosition.CompanyPositionId,                             
+                            station.StationNbr,  
                             company.CompanyNme,
-                            station.StationNbr,
-                            shift.ShiftNme
+                            shift.ShiftNme,
+                            jobTitle.JobTitleShortDesc,
+                            companyPosition.TruckPosition
 
-                        };
-            return _mapper.Map<List<CompanyPositionDetailResponse>>(await query.AsNoTracking().OrderBy(cp => cp.CompanyPositionId).ToListAsync());
+                        );
+            return await query.AsNoTracking().OrderBy(cp => cp.CompanyPositionId).ToListAsync();
         }
 
         public async Task<List<JobTitleResponse>> GetAllJobTitles()

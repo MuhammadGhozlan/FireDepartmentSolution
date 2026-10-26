@@ -27,4 +27,4 @@ namespace FireTime.Services
         public async Task<List<EmployeeStatusCodeResponse>> GetEmployeeStatusCodes() => await _lookupsRepository.GetEmployeeStatusCodes();
     }
 }
-}
+
