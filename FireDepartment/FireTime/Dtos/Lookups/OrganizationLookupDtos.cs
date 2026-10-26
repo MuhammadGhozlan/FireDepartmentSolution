@@ -37,6 +37,7 @@ public sealed record CompanyResponse(
 
 public sealed record CompanyPositionRequest(byte TruckPosition, int CompanyId, int JobTitleId, int ShiftId);
 public sealed record CompanyPositionResponse(int CompanyPositionId, byte TruckPosition, int CompanyId, int JobTitleId, int ShiftId);
+public sealed record CompanyPositionDetailResponse(int CompanyPositionId, string? StationNumber, string? CompanyName, string? ShiftName);
 
 public sealed record ShiftRequest(string ShiftCode, string? ShiftNme, byte? SortOrder, bool IsActive);
 public sealed record ShiftResponse(int ShiftId, string ShiftCode, string? ShiftNme, byte? SortOrder, bool IsActive);

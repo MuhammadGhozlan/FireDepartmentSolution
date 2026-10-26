@@ -1,7 +1,8 @@
 ﻿using FireTime.Dtos.Employees;
 using FireTime.Interfaces.Repo_Interfaces;
+using FireTime.Interfaces.Service_Interfaces;
 
-namespace FireTime.Interfaces.Service_Interfaces
+namespace FireTime.Services
 {
     public class EmployeeService : IEmployeeService
     {

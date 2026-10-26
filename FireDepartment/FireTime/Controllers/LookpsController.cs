@@ -45,7 +45,7 @@ namespace FireTime.Controllers
         }
 
         [HttpGet("company-positions")]
-        public async Task<ActionResult<List<CompanyPositionResponse>>> GetAllCompanyPositions()
+        public async Task<ActionResult<List<CompanyPositionDetailResponse>>> GetAllCompanyPositions()
         {
             try
             {
@@ -92,6 +92,19 @@ namespace FireTime.Controllers
             try
             {
                 var result = await _lookupsService.GetWorkPeriods();
+                return Ok(result);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        [HttpGet("employee-status-codes")]
+        public async Task<ActionResult<List<EmployeeStatusCodeResponse>>> GetEmployeeStatusCodes()
+        {
+            try
+            {
+                var result = await _lookupsService.GetEmployeeStatusCodes();
                 return Ok(result);
             }
             catch(Exception ex)

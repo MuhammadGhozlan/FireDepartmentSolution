@@ -6,9 +6,10 @@ namespace FireTime.Interfaces.Repo_Interfaces
     {
         Task<List<StationResponse>> GetAllStations();
         Task<List<CompanyResponse>> GetAllCompanies();
-        Task<List<CompanyPositionResponse>> GetAllCompanyPositions();
+        Task<List<CompanyPositionDetailResponse>> GetAllCompanyPositions();
         Task<List<ShiftResponse>> GetAllShifts();
         Task<List<JobTitleResponse>> GetAllJobTitles();
         Task<List<WorkPeriodResponse>> GetWorkPeriods();
+        Task<List<EmployeeStatusCodeResponse>> GetEmployeeStatusCodes();
     }
 }

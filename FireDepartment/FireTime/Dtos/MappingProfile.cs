@@ -27,6 +27,7 @@ namespace FireTime.Dtos
             CreateMap<Shift, ShiftResponse>();
             CreateMap<JobTitle, JobTitleResponse>();
             CreateMap<CompanyPosition, CompanyPositionResponse>();
+            CreateMap<EmployeeStatusCode, EmployeeStatusCodeResponse>();
         }
     }
 }
