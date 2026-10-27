@@ -11,7 +11,7 @@
 <div class="hero-bg container-fluid d-flex align-items-center mb-4"
     style="height: 150px; background-position: center; background-size: cover;">
     <div class="container text-center">
-        <h1 class="text-white fw-bold drop-shadow" style="">Daily Attendance</h1>
+        <h1 class="text-white fw-bold drop-shadow">Daily Attendance</h1>
     </div>
 </div>
 
@@ -23,22 +23,24 @@
                 <span class="input-group-text bg-dark border-secondary text-white-50"><i
                         class="bi bi-calendar3"></i></span>
                 <input type="date" class="form-control bg-dark text-white border-secondary border-start-0"
-                    value="2024-04-24">
+                    [(ngModel)]="filterDate">
             </div>
         </div>
 
         <div class="col-auto">
-            <select class="form-select bg-dark text-white border-secondary">
-                <option selected>A Shift</option>
-                <option>B Shift</option>
-                <option>C Shift</option>
+            <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="selectedShift">
+                <option value="" disabled selected>Select Shift</option>
+                @for(shift of shifts; track shift.shiftId) {
+                <option [value]="shift.shiftId">{{ shift.shiftNme }}</option>
+                }
             </select>
         </div>
         <div class="col-auto">
-            <select class="form-select bg-dark text-white border-secondary">
-                <option selected>All Stations</option>
-                <option>Station 1</option>
-                <option>Station 2</option>
+            <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="selectedStation">
+                <option value="" selected>All Stations</option>
+                @for(station of stations; track station.stationId) {
+                <option [value]="station.stationId">{{ station.stationNbr }}</option>
+                }
             </select>
         </div>
 
@@ -47,13 +49,13 @@
                 <span class="input-group-text bg-dark border-secondary text-white-50"><i
                         class="bi bi-search"></i></span>
                 <input type="text" class="form-control bg-dark text-white border-secondary border-start-0"
-                    placeholder="Search personnel...">
+                    placeholder="Search personnel..." [(ngModel)]="searchTerm">
             </div>
         </div>
 
         <div class="col-auto">
-            <button class="btn btn-warning fw-bold text-dark">Search</button>
-            <button class="btn btn-secondary ms-2">Cancel</button>
+            <button class="btn btn-warning fw-bold text-dark" (click)="onSearch()">Search</button>
+            <button class="btn btn-secondary ms-2" (click)="onCancel()">Cancel</button>
         </div>
     </div>
 
@@ -71,34 +73,39 @@
                 </tr>
             </thead>
             <tbody>
+                @for(row of roster; track row.id) {
                 <tr>
-                    <td>451</td>
+                    <td>{{ row.id }}</td>
                     <td><span class="badge bg-dark border border-secondary text-warning"><i
-                                class="bi bi-star-fill me-1"></i> CHIEF</span></td>
-                    <td>John Smith</td>
-                    <td>Station 3</td>
-                    <td>Battalion A</td>
-                    <td>Battalion Chief</td>
+                                class="bi bi-star-fill me-1"></i> {{ row.roic }}</span></td>
+                    <td>{{ row.employeeName }}</td>
+                    <td>{{ row.stationName }}</td>
+                    <td>{{ row.companyName }}</td>
+                    <td>{{ row.jobTitle }}</td>
                     <td>
                         <div class="dropdown">
                             <button class="btn btn-success btn-sm dropdown-toggle w-100" type="button"
-                                data-bs-toggle="dropdown">Present</button>
+                                data-bs-toggle="dropdown">{{ row.statusDescription || 'Select Status' }}</button>
                             <ul class="dropdown-menu dropdown-menu-dark">
-                                @for(st of status; track st){
-                                <li><a class="dropdown-item" href="#">{{st}}</a></li>
+                                @for(st of statuses; track st.attendanceStatusId){
+                                <li><a class="dropdown-item" href="javascript:void(0)" (click)="onStatusSelected(row, st)">{{ st.attendanceStatusDesc }} ({{ st.attendanceStatusCde }})</a></li>
                                 }
-
                             </ul>
                         </div>
                     </td>
                 </tr>
+                } @empty {
+                <tr>
+                    <td colspan="7" class="text-center text-white-50 py-4">No attendance records found.</td>
+                </tr>
+                }
             </tbody>
         </table>
     </div>
 
     <div class="d-flex justify-content-end mt-3 mb-5">
-        <button class="btn btn-warning fw-bold px-4">Save Changes</button>
-        <button class="btn btn-dark border-secondary px-4 ms-2">Cancel</button>
+        <button class="btn btn-warning fw-bold px-4" (click)="saveChanges()">Save Changes</button>
+        <button class="btn btn-dark border-secondary px-4 ms-2" (click)="onCancel()">Cancel</button>
     </div>
 </div>
 
