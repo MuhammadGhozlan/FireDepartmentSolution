@@ -17,6 +17,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddDbContext<IisFireTimeContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddCors(options => options.AddPolicy("FireDepartment", policy =>
+{
+    policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+}));
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -46,7 +50,7 @@ if(app.Environment.IsDevelopment())
         options.RoutePrefix = string.Empty;
     });
 }
-
+app.UseCors("FireDepartment");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

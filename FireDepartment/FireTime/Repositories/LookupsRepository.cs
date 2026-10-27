@@ -33,6 +33,7 @@ namespace FireTime.Repositories
                         join jobTitle in _context.JobTitles
                         on companyPosition.JobTitleId equals jobTitle.JobTitleId into jobTitleGroup
                         from jobTitle in jobTitleGroup.DefaultIfEmpty()
+                        orderby companyPosition.CompanyPositionId
                         select new CompanyPositionDetailResponse
                         (
                             companyPosition.CompanyPositionId,
@@ -46,7 +47,7 @@ namespace FireTime.Repositories
                             companyPosition.JobTitleId,
                             companyPosition.ShiftId
                         );
-            return await query.AsNoTracking().OrderBy(cp => cp.CompanyPositionId).ToListAsync();
+            return await query.AsNoTracking().ToListAsync();
         }
 
         public async Task<List<JobTitleResponse>> GetAllJobTitles()
