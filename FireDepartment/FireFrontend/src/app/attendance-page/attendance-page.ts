@@ -1,10 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { FireDepartmentService } from '../services/fire-department-service';
-import {
-  AttendanceStatusResponse,
-  ShiftResponse,
-  StationResponse
-} from '../interfaces';
+import { ChangeDetectorRef, Component } from '@angular/core';
+import { AppServices } from '../services/app-services';
+import { AttendanceFilterRequest, AttendanceRequest, AttendanceResponse, UpdateAttendanceRequest, WorkPeriodResponse } from '../interfaces';
 
 @Component({
   selector: 'app-attendance-page',
@@ -12,69 +8,134 @@ import {
   templateUrl: './attendance-page.html',
   styleUrl: './attendance-page.css',
 })
-export class AttendancePage implements OnInit {
-  filterDate: string = new Date().toISOString().split('T')[0];
-  selectedShift: any = '';
-  selectedStation: any = '';
-  searchTerm: string = '';
+export class AttendancePage {
+  status: { [key: string | number]: string } = {}
+  attendanceResponse: AttendanceResponse[] = [];
+  object = Object.keys;
+  filterRequest: AttendanceFilterRequest = {};
+  workPeriods: WorkPeriodResponse[] = [];
+  selectedWorkPeriod: number | null = null;;
+  constructor(private service: AppServices, private cdr: ChangeDetectorRef) { }
 
-  statuses: AttendanceStatusResponse[] = [];
-  shifts: ShiftResponse[] = [];
-  stations: StationResponse[] = [];
-  roster: any[] = []; // Changed to any[] to match backend properties flexibly
-
-  constructor(private fireDepartmentService: FireDepartmentService) { }
-
-  ngOnInit(): void {
-    this.loadAttendanceStatuses();
-    this.loadShifts();
-    this.loadStations();
-    this.onSearch();
+  ngOnInit() {
+    this.getAttendanceStatuses();
+    this.getWorkPeriods();
+    this.getAttendance();
   }
 
-  loadAttendanceStatuses(): void {
-    this.fireDepartmentService.getAttendanceStatuses().subscribe((data) => {
-      this.statuses = data;
+  getAttendanceStatuses() {
+    this.service.GetAttendanceStatuses().subscribe({
+      next: res => {
+        console.log('API Response', res);
+        if (res) {
+          res.forEach(s => this.status[s.attendanceStatusId] = s.attendanceStatusDesc)
+          this.cdr.detectChanges();
+        }
+      },
+      error: err => {
+        console.log(err)
+
+      },
+      complete: () => console.log('request has been completed')
+    })
+  }
+
+  getWorkPeriods() {
+    this.service.GetWorkPeriods().subscribe({
+      next: res => {
+        this.workPeriods = res;
+        this.cdr.detectChanges();
+      },
+      error: err => console.log(err)
     });
   }
 
-  loadShifts(): void {
-    this.fireDepartmentService.getShifts().subscribe((data) => {
-      this.shifts = data;
+  getAttendance() {
+    this.service.GetAttendance().subscribe({
+      next: res => {
+        console.log('API Response', res);
+        if (res) {
+          this.attendanceResponse = res.map(item => ({ ...item, isOpen: false }));
+          this.cdr.detectChanges();
+        }
+      },
+      error: err => {
+        console.log(err)
+
+      },
+      complete: () => console.log('request has been completed')
+    })
+  }
+  TakeAttendance(attendanceRequests: AttendanceRequest[]) {
+    this.service.TakeAttendance(attendanceRequests).subscribe({
+      next: res => {
+        this.attendanceResponse = res.map(item => ({ ...item, isOpen: false }));
+        this.cdr.detectChanges();
+      },
+      error: err => console.log(err)
     });
   }
 
-  loadStations(): void {
-    this.fireDepartmentService.getStations().subscribe((data) => {
-      this.stations = data;
+  FilterAttendance(attendanceFilterRequest: AttendanceFilterRequest) {
+    this.service.FilterAttendance(attendanceFilterRequest).subscribe({
+      next: res => {
+        this.attendanceResponse = res.map(item => ({ ...item, isOpen: false }));
+        this.cdr.detectChanges();
+      },
+      error: err => console.log(err)
     });
   }
 
-  onSearch(): void {
-    const formattedDate = new Date(this.filterDate).toISOString().split('T')[0];
-    this.fireDepartmentService.filterAttendance({
-      attendanceDate: formattedDate,
-      roic: this.searchTerm || null,
-      shiftId: this.selectedShift ? Number(this.selectedShift) : null,
-      stationId: this.selectedStation ? Number(this.selectedStation) : null
-    }).subscribe((data) => {
-      this.roster = data;
+  UpdateAttendance(id: number, updateAttendanceRequest: UpdateAttendanceRequest) {
+    this.service.UpdateAttendance(id, updateAttendanceRequest).subscribe({
+      next: () => {
+        this.getAttendance();
+        this.cdr.detectChanges();
+      },
+      error: err => console.log(err)
     });
   }
 
-  onCancel(): void {
-    this.searchTerm = '';
-    this.selectedShift = '';
-    this.selectedStation = '';
-    this.roster = [];
+  DeleteAttendance(id: number) {
+    this.service.DeleteAttendance(id).subscribe({
+      next: () => {
+        this.getAttendance();
+        this.cdr.detectChanges();
+      },
+      error: err => console.log(err)
+    });
   }
 
-  saveChanges(): void {
-    // Implement save logic
+  GetDailyRoster(date: string, workPeriodNbr: number | null) {
+    this.service.GetDailyRoster(date, workPeriodNbr).subscribe({
+      next: res => {
+        this.attendanceResponse = res.map(r => r.attendance ?? {
+          attendanceId: 0,
+          attendanceDate: date,
+          roic: r.roic,
+          employeeAssignmentId: r.employeeAssignmentId,
+          attendanceStatusId: 1,
+          attendanceComments: '',
+          isOpen: false
+        });
+        this.cdr.detectChanges();
+      },
+      error: err => console.log(err)
+    });
   }
-
-  onStatusSelected(row: any, st: AttendanceStatusResponse): void {
-    row.attendanceStatusId = st.attendanceStatusId;
-    row.statusDescription = st.attendanceStatusDesc;
+  loadRoster() {
+    this.GetDailyRoster(this.filterRequest.attendanceDate!, this.selectedWorkPeriod);
+  }
+  onSearch() {
+    if (this.filterRequest.attendanceDate) {
+      this.GetDailyRoster(this.filterRequest.attendanceDate, this.selectedWorkPeriod);
+    } else if (this.filterRequest.attendanceStatusId != null || this.filterRequest.roic) {
+      this.FilterAttendance(this.filterRequest);
+    }
+  }
+  resetFilters() {
+    this.selectedWorkPeriod = null;
+    this.filterRequest = {};
+    this.getAttendance();
   }
 }

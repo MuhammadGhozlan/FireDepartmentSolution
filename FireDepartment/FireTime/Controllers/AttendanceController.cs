@@ -81,7 +81,7 @@ namespace FireTime.Controllers
             }
         }
         [HttpGet("daily-roster")]
-        public async Task<ActionResult<List<DailyRosterResponse>>> GetDailyRoster([FromQuery] DateOnly date, [FromQuery] int workPeriodNbr)
+        public async Task<ActionResult<List<DailyRosterResponse>>> GetDailyRoster([FromQuery] DateOnly date, [FromQuery] int? workPeriodNbr)
         {
             var roster = await _attendanceService.GetDailyRoster(date, workPeriodNbr);
             return Ok(roster);

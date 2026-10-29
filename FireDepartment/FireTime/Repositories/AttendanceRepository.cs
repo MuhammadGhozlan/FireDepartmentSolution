@@ -222,7 +222,7 @@ namespace FireTime.Repositories
             return _mapper.Map<List<AttendanceResponse>>(attendances);
         }
 
-        public async Task<List<DailyRosterResponse>> GetDailyRoster(DateOnly date, int WorkPeriodNbr)
+        public async Task<List<DailyRosterResponse>> GetDailyRoster(DateOnly date, int? WorkPeriodNbr)
         {
             var dailyRosterAssignments = await (from ea in _context.EmployeeAssignments
                                                 join

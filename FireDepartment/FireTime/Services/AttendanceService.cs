@@ -76,7 +76,7 @@ namespace FireTime.Services
             }
             return attendant;
         }
-        public async Task<List<DailyRosterResponse>> GetDailyRoster(DateOnly date, int workPeriodNbr)
+        public async Task<List<DailyRosterResponse>> GetDailyRoster(DateOnly date, int? workPeriodNbr)
         {
             var dailyRoster = await _attendanceRepository.GetDailyRoster(date, workPeriodNbr);
             if(dailyRoster.Count == 0)

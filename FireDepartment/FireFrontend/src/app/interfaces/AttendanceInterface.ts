@@ -30,6 +30,7 @@ export interface AttendanceResponse {
   attendanceStatusId: number;
   attendanceComments?: string | null;
   deletedInd?: boolean | null;
+  isOpen?: boolean;
 }
 
 export interface DailyRosterResponse {

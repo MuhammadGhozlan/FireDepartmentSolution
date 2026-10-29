@@ -23,39 +23,38 @@
                 <span class="input-group-text bg-dark border-secondary text-white-50"><i
                         class="bi bi-calendar3"></i></span>
                 <input type="date" class="form-control bg-dark text-white border-secondary border-start-0"
-                    [(ngModel)]="filterDate">
+                    [(ngModel)]="filterRequest.attendanceDate">
             </div>
         </div>
-
         <div class="col-auto">
-            <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="selectedShift">
-                <option value="" disabled selected>Select Shift</option>
-                @for(shift of shifts; track shift.shiftId) {
-                <option [value]="shift.shiftId">{{ shift.shiftNme }}</option>
+            <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="selectedWorkPeriod">
+                <option [ngValue]="null">All Work Periods</option>
+                @for(wp of workPeriods; track wp.workPeriodId){
+                <option [value]="wp.workPeriodNbr">Work Period {{wp.workPeriodNbr}}</option>
                 }
             </select>
         </div>
         <div class="col-auto">
-            <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="selectedStation">
-                <option value="" selected>All Stations</option>
-                @for(station of stations; track station.stationId) {
-                <option [value]="station.stationId">{{ station.stationNbr }}</option>
+            <select class="form-select bg-dark text-white border-secondary"
+                [(ngModel)]="filterRequest.attendanceStatusId">
+                <option [ngValue]="undefined" disabled selected class="text-white-50">Select Status</option>
+                <option [ngValue]="null" class="text-white">All Statuses</option>
+                @for(key of object(status); track key){
+                <option [value]="key" class="text-white">{{status[key]}}</option>
                 }
             </select>
         </div>
-
         <div class="col">
             <div class="input-group">
                 <span class="input-group-text bg-dark border-secondary text-white-50"><i
                         class="bi bi-search"></i></span>
                 <input type="text" class="form-control bg-dark text-white border-secondary border-start-0"
-                    placeholder="Search personnel..." [(ngModel)]="searchTerm">
+                    placeholder="Search personnel..." [(ngModel)]="filterRequest.roic">
             </div>
         </div>
-
         <div class="col-auto">
             <button class="btn btn-warning fw-bold text-dark" (click)="onSearch()">Search</button>
-            <button class="btn btn-secondary ms-2" (click)="onCancel()">Cancel</button>
+            <button class="btn btn-secondary ms-2" (click)="resetFilters()">Reset</button>
         </div>
     </div>
 
@@ -63,40 +62,53 @@
         <table class="table table-dark table-hover align-middle border-secondary">
             <thead class="table-secondary text-uppercase small">
                 <tr>
-                    <th>ID</th>
+                    <th>Attendance ID</th>
                     <th>ROIC</th>
-                    <th>Name</th>
-                    <th>Station</th>
-                    <th>Company</th>
-                    <th>Position</th>
+                    <th>Assignment ID</th>
+                    <th>Date</th>
+                    <th>Comments</th>
                     <th>Status</th>
+                    <th class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @for(row of roster; track row.id) {
+                @for(item of attendanceResponse; track item.attendanceId){
                 <tr>
-                    <td>{{ row.id }}</td>
-                    <td><span class="badge bg-dark border border-secondary text-warning"><i
-                                class="bi bi-star-fill me-1"></i> {{ row.roic }}</span></td>
-                    <td>{{ row.employeeName }}</td>
-                    <td>{{ row.stationName }}</td>
-                    <td>{{ row.companyName }}</td>
-                    <td>{{ row.jobTitle }}</td>
+                    <td>{{item.attendanceId}}</td>
                     <td>
-                        <div class="dropdown">
+                        <span class="badge bg-dark border border-secondary text-warning">
+                            <i class="bi bi-star-fill me-1"></i> {{item.roic}}
+                        </span>
+                    </td>
+                    <td>{{item.employeeAssignmentId}}</td>
+                    <td>{{item.attendanceDate}}</td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary"
+                            [(ngModel)]="item.attendanceComments">
+                    </td>
+                    <td>
+                        <div class="dropdown" [class.show]="item.isOpen">
                             <button class="btn btn-success btn-sm dropdown-toggle w-100" type="button"
-                                data-bs-toggle="dropdown">{{ row.statusDescription || 'Select Status' }}</button>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                @for(st of statuses; track st.attendanceStatusId){
-                                <li><a class="dropdown-item" href="javascript:void(0)" (click)="onStatusSelected(row, st)">{{ st.attendanceStatusDesc }} ({{ st.attendanceStatusCde }})</a></li>
+                                (click)="item.isOpen=!item.isOpen"
+                                data-bs-toggle="dropdown">{{status[item.attendanceStatusId]}}</button>
+                            <ul class="dropdown-menu dropdown-menu-dark" [class.show]="item.isOpen">
+                                @for(key of object(status); track key){
+                                <li><a class="dropdown-item" href="#"
+                                        (click)="$event.preventDefault(); item.attendanceStatusId = +key; item.isOpen = false">{{status[key]}}</a>
+                                </li>
                                 }
                             </ul>
                         </div>
                     </td>
-                </tr>
-                } @empty {
-                <tr>
-                    <td colspan="7" class="text-center text-white-50 py-4">No attendance records found.</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-primary me-1"
+                            (click)="UpdateAttendance(item.attendanceId, { attendanceDate: item.attendanceDate, attendanceStatusId: item.attendanceStatusId, attendanceComments: item.attendanceComments })">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" (click)="DeleteAttendance(item.attendanceId)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
                 </tr>
                 }
             </tbody>
@@ -104,8 +116,8 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3 mb-5">
-        <button class="btn btn-warning fw-bold px-4" (click)="saveChanges()">Save Changes</button>
-        <button class="btn btn-dark border-secondary px-4 ms-2" (click)="onCancel()">Cancel</button>
+        <button class="btn btn-warning fw-bold px-4" (click)="TakeAttendance(attendanceResponse)">Save All</button>
+        <button class="btn btn-dark border-secondary px-4 ms-2" (click)="getAttendance()">Cancel</button>
     </div>
 </div>
 
