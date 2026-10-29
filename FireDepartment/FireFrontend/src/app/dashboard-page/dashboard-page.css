@@ -1,0 +1,141 @@
+.dashboard-nav {
+  gap: 12px;
+}
+
+.navbar-brand {
+  white-space: normal;
+}
+
+.department-name {
+  margin-left: 0.35rem;
+}
+
+.dashboard-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.dashboard-links a,
+.dashboard-links span {
+  color: #fff;
+  text-decoration: none;
+}
+
+.dashboard-links span {
+  border-bottom: 2px solid #fff;
+  padding: 8px 0;
+}
+
+.dashboard-links a:hover {
+  text-decoration: underline;
+}
+
+.dashboard-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.dashboard-heading {
+  border-bottom: 1px solid #456071;
+  margin-bottom: 36px;
+  padding-bottom: 20px;
+}
+
+h1 {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+h2 {
+  color: #d7e4ea;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 20px;
+}
+
+.feature-card {
+  align-items: flex-start;
+  background: #233b4e;
+  border: 1px solid #486274;
+  border-radius: 8px;
+  color: #fff;
+  display: flex;
+  gap: 16px;
+  min-height: 168px;
+  padding: 24px;
+  text-decoration: none;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.feature-card:hover,
+.feature-card:focus-visible {
+  background: #29465a;
+  border-color: #f5bd3d;
+  color: #fff;
+}
+
+.feature-card:focus-visible {
+  outline: 2px solid #f5bd3d;
+  outline-offset: 3px;
+}
+
+.feature-icon {
+  align-items: center;
+  background: #654d2b;
+  border-radius: 6px;
+  color: #ffcc68;
+  display: flex;
+  flex: 0 0 44px;
+  font-size: 1.45rem;
+  height: 44px;
+  justify-content: center;
+}
+
+.feature-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.feature-content strong {
+  font-size: 1.15rem;
+}
+
+.feature-content span {
+  color: #cbd8df;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.feature-arrow {
+  color: #ffcc68;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 600px) {
+  .dashboard-shell {
+    padding: 32px 16px 64px;
+  }
+
+  .dashboard-links {
+    gap: 12px;
+  }
+
+  .department-name {
+    display: block;
+    font-size: 0.85rem;
+    margin-left: 0;
+  }
+}

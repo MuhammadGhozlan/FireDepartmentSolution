@@ -1,0 +1,187 @@
+<nav class="navbar bg-primary" data-bs-theme="dark">
+  <div class="container-fluid employee-nav">
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/home">
+      <img src="assets/FireDepartment.png" width="32" height="32" alt="">
+      <span><strong>City of Tulsa</strong> Fire Department</span>
+    </a>
+    <a class="dashboard-link" routerLink="/dashboard">Dashboard</a>
+  </div>
+</nav>
+
+<main class="employee-shell">
+  <header class="page-heading">
+    <div>
+      <h1>
+        @if (view === 'create') { Add employee }
+        @else if (view === 'edit') { Edit employee }
+        @else { Employees }
+      </h1>
+    </div>
+    @if (view === 'list') {
+      <button type="button" class="btn btn-warning fw-bold" (click)="startCreate()" [disabled]="loadingDetail">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Add employee
+      </button>
+    } @else {
+      <button type="button" class="btn btn-outline-light" (click)="cancelEdit()" [disabled]="saving">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> Employees
+      </button>
+    }
+  </header>
+
+  @if (errorMessage) {
+    <div class="alert alert-danger" role="alert">{{errorMessage}}</div>
+  }
+  @if (notice) {
+    <div class="alert alert-success" role="status">{{notice}}</div>
+  }
+
+  @if (view === 'list') {
+    <div class="filters">
+      <div class="search-field">
+        <label for="employee-search">Search employees</label>
+        <input id="employee-search" type="search" class="form-control" placeholder="ROIC, employee number, or name"
+          [(ngModel)]="searchText" [disabled]="loading">
+      </div>
+      <div class="status-field">
+        <label for="employee-status-filter">Status</label>
+        <select id="employee-status-filter" class="form-select" [(ngModel)]="statusFilter" [disabled]="loading">
+          <option value="">All statuses</option>
+          @for (status of statusCodes; track status.employeeStatusCde) {
+            <option [value]="status.employeeStatusCde">{{status.employeeStatusDesc}}</option>
+          }
+        </select>
+      </div>
+      <button type="button" class="refresh-button" (click)="loadEmployees()" [disabled]="loading"
+        title="Refresh employees" aria-label="Refresh employees">
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="list-count" aria-live="polite">
+      @if (loading) { Loading employees... }
+      @else if (searchText.trim() || statusFilter) { {{visibleEmployees.length}} of {{employees.length}} employees }
+      @else { {{employees.length}} employees }
+    </div>
+
+    <div class="table-responsive employee-table">
+      <table class="table table-dark table-hover align-middle">
+        <thead>
+          <tr><th>ROIC</th><th>Employee #</th><th>Name</th><th>Status</th><th>Paramedic</th><th>Hazmat</th><th class="text-end">Action</th></tr>
+        </thead>
+        <tbody>
+          @if (loading) {
+            <tr><td colspan="7" class="empty-row">Loading employees...</td></tr>
+          } @else {
+            @for (employee of visibleEmployees; track employee.roic) {
+              <tr>
+                <td>{{employee.roic}}</td>
+                <td>{{employee.employeeNbr}}</td>
+                <td>{{fullName(employee)}}</td>
+                <td>{{statusName(employee.employeeStatusCde)}}</td>
+                <td>{{employee.paramedic ? 'Yes' : 'No'}}</td>
+                <td>{{employee.hazmat ? 'Yes' : 'No'}}</td>
+                <td class="text-end">
+                  <button type="button" class="edit-button" (click)="startEdit(employee.roic)"
+                    [disabled]="loadingDetail" title="Edit employee"
+                    [attr.aria-label]="'Edit employee ' + employee.roic">
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="empty-row">No employees match the selected filters.</td></tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <form #employeeForm="ngForm" (ngSubmit)="saveEmployee()" class="employee-form">
+      <div class="form-grid">
+        <div>
+          <label for="employee-roic">ROIC</label>
+          <input id="employee-roic" name="roic" type="text" class="form-control" maxlength="10" required
+            [(ngModel)]="form.roic" [readonly]="view === 'edit'" [disabled]="saving">
+        </div>
+        <div>
+          <label for="employee-number">Employee number</label>
+          <input id="employee-number" name="employeeNbr" type="number" class="form-control" min="1" step="1" required
+            [(ngModel)]="form.employeeNbr" [readonly]="view === 'edit'" [disabled]="saving">
+        </div>
+        <div>
+          <label for="employee-first">First name</label>
+          <input id="employee-first" name="firstNme" type="text" class="form-control" maxlength="30" required
+            [(ngModel)]="form.firstNme" [disabled]="saving">
+        </div>
+        <div>
+          <label for="employee-middle">Middle initial</label>
+          <input id="employee-middle" name="middleInitialNme" type="text" class="form-control" maxlength="1"
+            [(ngModel)]="form.middleInitialNme" [disabled]="saving">
+        </div>
+        <div>
+          <label for="employee-last">Last name</label>
+          <input id="employee-last" name="lastNme" type="text" class="form-control" maxlength="30" required
+            [(ngModel)]="form.lastNme" [disabled]="saving">
+        </div>
+        <div>
+          <label for="employee-suffix">Suffix</label>
+          <input id="employee-suffix" name="suffix" type="text" class="form-control" maxlength="5"
+            [(ngModel)]="form.suffix" [disabled]="saving">
+        </div>
+        <div>
+          <label for="employee-status">Status</label>
+          <select id="employee-status" name="employeeStatusCde" class="form-select" required
+            [(ngModel)]="form.employeeStatusCde" [disabled]="saving">
+            <option value="" disabled>Select status</option>
+            @for (status of statusCodes; track status.employeeStatusCde) {
+              <option [value]="status.employeeStatusCde">{{status.employeeStatusDesc}}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="employee-birth-date">Birth date</label>
+          <input id="employee-birth-date" name="birthDate" type="date" class="form-control"
+            [(ngModel)]="form.birthDate" [disabled]="saving">
+        </div>
+        <div>
+          <label for="employee-marital-status">Marital status code</label>
+          <input id="employee-marital-status" name="maritalStatusCde" type="text" class="form-control" maxlength="1"
+            [(ngModel)]="form.maritalStatusCde" [disabled]="saving">
+        </div>
+        @if (view === 'create') {
+          <div>
+            <label for="employee-ssn">Social Security number (optional)</label>
+            <input id="employee-ssn" name="socialSecurityNbr" type="password" class="form-control"
+              maxlength="10" autocomplete="off" [(ngModel)]="form.socialSecurityNbr" [disabled]="saving">
+          </div>
+        }
+        <div class="check-fields">
+          <label class="form-check">
+            <input name="paramedic" type="checkbox" class="form-check-input"
+              [(ngModel)]="form.paramedic" [disabled]="saving">
+            <span class="form-check-label">Paramedic</span>
+          </label>
+          <label class="form-check">
+            <input name="hazmat" type="checkbox" class="form-check-input"
+              [(ngModel)]="form.hazmat" [disabled]="saving">
+            <span class="form-check-label">Hazmat</span>
+          </label>
+        </div>
+      </div>
+
+      @if (selectedEmployee) {
+        <div class="audit-details">
+          Created {{selectedEmployee.createdDate | date:'medium'}} by {{selectedEmployee.createdBy}}.
+          Last updated {{selectedEmployee.lastUpdateDate | date:'medium'}} by {{selectedEmployee.lastUpdateBy}}.
+        </div>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-warning fw-bold" [disabled]="employeeForm.invalid || saving">
+          {{saving ? 'Saving...' : 'Save employee'}}
+        </button>
+        <button type="button" class="btn btn-outline-light" (click)="cancelEdit()" [disabled]="saving">Cancel</button>
+      </div>
+    </form>
+  }
+</main>

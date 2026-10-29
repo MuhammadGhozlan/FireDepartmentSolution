@@ -1,127 +1,147 @@
 <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
-    <div class="container-fluid">
-        <div class="container-fluid d-flex">
-            <img class="d-inline-block align-top" width="30" height="30" src="assets/FireDepartment.png" />
-            <span class="fw-bold" style="margin-left: 2% ;">Home</span>
-        </div>
-        <a class="navbar-brand" href="#"><span class="fw-bold pe-2">City of Tulsa</span> Fire Department</a>
+  <div class="container-fluid">
+    <div class="container-fluid d-flex">
+      <img class="d-inline-block align-top" width="30" height="30" src="assets/FireDepartment.png" alt="" />
+      <a routerLink="/dashboard" class="fw-bold ms-2 text-white text-decoration-none">Dashboard</a>
     </div>
+    <a class="navbar-brand" routerLink="/home"><span class="fw-bold pe-2">City of Tulsa</span> Fire Department</a>
+  </div>
 </nav>
 
 <div class="hero-bg container-fluid d-flex align-items-center mb-4"
-    style="height: 150px; background-position: center; background-size: cover;">
-    <div class="container text-center">
-        <h1 class="text-white fw-bold drop-shadow">Daily Attendance</h1>
-    </div>
+  style="height: 150px; background-position: center; background-size: cover;">
+  <div class="container text-center">
+    <h1 class="text-white fw-bold drop-shadow">Daily Attendance</h1>
+  </div>
 </div>
 
-<div class="container-fluid px-5">
-
-    <div class="row g-3 align-items-center mb-4 bg-dark bg-opacity-50 p-3 rounded-3 border border-secondary">
-        <div class="col-auto">
-            <div class="input-group">
-                <span class="input-group-text bg-dark border-secondary text-white-50"><i
-                        class="bi bi-calendar3"></i></span>
-                <input type="date" class="form-control bg-dark text-white border-secondary border-start-0"
-                    [(ngModel)]="filterRequest.attendanceDate">
-            </div>
-        </div>
-        <div class="col-auto">
-            <select class="form-select bg-dark text-white border-secondary" [(ngModel)]="selectedWorkPeriod">
-                <option [ngValue]="null">All Work Periods</option>
-                @for(wp of workPeriods; track wp.workPeriodId){
-                <option [value]="wp.workPeriodNbr">Work Period {{wp.workPeriodNbr}}</option>
-                }
-            </select>
-        </div>
-        <div class="col-auto">
-            <select class="form-select bg-dark text-white border-secondary"
-                [(ngModel)]="filterRequest.attendanceStatusId">
-                <option [ngValue]="undefined" disabled selected class="text-white-50">Select Status</option>
-                <option [ngValue]="null" class="text-white">All Statuses</option>
-                @for(key of object(status); track key){
-                <option [value]="key" class="text-white">{{status[key]}}</option>
-                }
-            </select>
-        </div>
-        <div class="col">
-            <div class="input-group">
-                <span class="input-group-text bg-dark border-secondary text-white-50"><i
-                        class="bi bi-search"></i></span>
-                <input type="text" class="form-control bg-dark text-white border-secondary border-start-0"
-                    placeholder="Search personnel..." [(ngModel)]="filterRequest.roic">
-            </div>
-        </div>
-        <div class="col-auto">
-            <button class="btn btn-warning fw-bold text-dark" (click)="onSearch()">Search</button>
-            <button class="btn btn-secondary ms-2" (click)="resetFilters()">Reset</button>
-        </div>
+<div class="container-fluid px-3 px-md-5">
+  <div class="row g-3 align-items-end mb-4 bg-dark bg-opacity-50 p-3 rounded-3 border border-secondary">
+    <div class="col-auto">
+      <label class="form-label" for="attendance-date">Date</label>
+      <input id="attendance-date" type="date" class="form-control bg-dark text-white border-secondary"
+        [(ngModel)]="filterRequest.attendanceDate" [disabled]="loading || saving">
     </div>
+    <div class="col-auto">
+      <label class="form-label" for="work-period">Work period</label>
+      <select id="work-period" class="form-select bg-dark text-white border-secondary"
+        [(ngModel)]="selectedWorkPeriod" [disabled]="loading || saving">
+        <option [ngValue]="null">All Work Periods</option>
+        @for (period of workPeriods; track period) {
+          <option [ngValue]="period">Work Period {{period}}</option>
+        }
+      </select>
+    </div>
+    <div class="col-auto">
+      <label class="form-label" for="attendance-status-filter">Status</label>
+      <select id="attendance-status-filter" class="form-select bg-dark text-white border-secondary"
+        [(ngModel)]="filterRequest.attendanceStatusId" [disabled]="loading || saving">
+        <option [ngValue]="null">All Statuses</option>
+        @for (status of statuses; track status.attendanceStatusId) {
+          <option [ngValue]="status.attendanceStatusId">{{status.attendanceStatusDesc}}</option>
+        }
+      </select>
+    </div>
+    <div class="col">
+      <label class="form-label" for="attendance-roic">ROIC</label>
+      <input id="attendance-roic" type="text" class="form-control bg-dark text-white border-secondary"
+        placeholder="Exact ROIC" [(ngModel)]="filterRequest.roic" [disabled]="loading || saving">
+    </div>
+    <div class="col">
+      <label class="form-label" for="attendance-name">Name</label>
+      <input id="attendance-name" type="text" class="form-control bg-dark text-white border-secondary"
+        placeholder="Search by name" [(ngModel)]="nameSearch" [disabled]="loading || saving">
+    </div>
+    <div class="col-auto">
+      <button type="button" class="btn btn-warning fw-bold text-dark" (click)="onSearch()"
+        [disabled]="loading || saving || (workPeriodsLoading && !!filterRequest.attendanceDate) || (employeeNamesLoading && !!nameSearch.trim())">Search</button>
+      <button type="button" class="btn btn-secondary ms-2" (click)="resetFilters()"
+        [disabled]="loading || saving">Reset</button>
+    </div>
+  </div>
 
-    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-        <table class="table table-dark table-hover align-middle border-secondary">
-            <thead class="table-secondary text-uppercase small">
-                <tr>
-                    <th>Attendance ID</th>
-                    <th>ROIC</th>
-                    <th>Assignment ID</th>
-                    <th>Date</th>
-                    <th>Comments</th>
-                    <th>Status</th>
-                    <th class="text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for(item of attendanceResponse; track item.attendanceId){
-                <tr>
-                    <td>{{item.attendanceId}}</td>
-                    <td>
-                        <span class="badge bg-dark border border-secondary text-warning">
-                            <i class="bi bi-star-fill me-1"></i> {{item.roic}}
-                        </span>
-                    </td>
-                    <td>{{item.employeeAssignmentId}}</td>
-                    <td>{{item.attendanceDate}}</td>
-                    <td>
-                        <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary"
-                            [(ngModel)]="item.attendanceComments">
-                    </td>
-                    <td>
-                        <div class="dropdown" [class.show]="item.isOpen">
-                            <button class="btn btn-success btn-sm dropdown-toggle w-100" type="button"
-                                (click)="item.isOpen=!item.isOpen"
-                                data-bs-toggle="dropdown">{{status[item.attendanceStatusId]}}</button>
-                            <ul class="dropdown-menu dropdown-menu-dark" [class.show]="item.isOpen">
-                                @for(key of object(status); track key){
-                                <li><a class="dropdown-item" href="#"
-                                        (click)="$event.preventDefault(); item.attendanceStatusId = +key; item.isOpen = false">{{status[key]}}</a>
-                                </li>
-                                }
-                            </ul>
-                        </div>
-                    </td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-primary me-1"
-                            (click)="UpdateAttendance(item.attendanceId, { attendanceDate: item.attendanceDate, attendanceStatusId: item.attendanceStatusId, attendanceComments: item.attendanceComments })">
-                            <i class="bi bi-check-lg"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" (click)="DeleteAttendance(item.attendanceId)">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
+  @if (errorMessage) {
+    <div class="alert alert-danger" role="alert">{{errorMessage}}</div>
+  }
+  @if (notice) {
+    <div class="alert alert-success" role="status">{{notice}}</div>
+  }
+
+  <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+    <table class="table table-dark table-hover align-middle border-secondary">
+      <thead class="table-secondary text-uppercase small">
+        <tr>
+          <th>Attendance ID</th>
+          <th>ROIC</th>
+          <th>Name</th>
+          <th>Assignment ID</th>
+          <th>Work Period</th>
+          <th>Date</th>
+          <th>Comments</th>
+          <th>Status</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading) {
+          <tr><td colspan="9" class="text-center py-4">Loading attendance...</td></tr>
+        } @else {
+          @for (item of rows; track item.key) {
+            <tr>
+              <td>{{item.attendanceId ?? '-'}}</td>
+              <td>{{item.roic}}</td>
+              <td>{{employeeNames[item.roic] || '-'}}</td>
+              <td>{{item.employeeAssignmentId}}</td>
+              <td>{{item.workPeriodNbr ?? '-'}}</td>
+              <td>{{item.attendanceDate}}</td>
+              <td>
+                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary"
+                  [attr.aria-label]="'Comments for ' + item.roic"
+                  [(ngModel)]="item.attendanceComments" [disabled]="saving">
+              </td>
+              <td>
+                <select class="form-select form-select-sm bg-dark text-white border-secondary"
+                  [attr.aria-label]="'Status for ' + item.roic"
+                  [(ngModel)]="item.attendanceStatusId" [disabled]="saving">
+                  <option [ngValue]="null" disabled>Select status</option>
+                  @for (status of statuses; track status.attendanceStatusId) {
+                    <option [ngValue]="status.attendanceStatusId">{{status.attendanceStatusDesc}}</option>
+                  }
+                </select>
+              </td>
+              <td class="text-center text-nowrap">
+                <button type="button" class="btn btn-sm btn-primary me-1" title="Save row"
+                  [attr.aria-label]="'Save attendance for ' + item.roic"
+                  (click)="saveRow(item)"
+                  [disabled]="saving || (item.attendanceId === null ? item.attendanceStatusId === null : !isDirty(item))">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+                @if (item.attendanceId !== null) {
+                  <button type="button" class="btn btn-sm btn-danger" title="Delete attendance"
+                    [attr.aria-label]="'Delete attendance for ' + item.roic"
+                    (click)="deleteRow(item)" [disabled]="saving">
+                    <i class="bi bi-trash"></i>
+                  </button>
                 }
-            </tbody>
-        </table>
-    </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="9" class="text-center py-4">No attendance records match the selected filters.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
 
-    <div class="d-flex justify-content-end mt-3 mb-5">
-        <button class="btn btn-warning fw-bold px-4" (click)="TakeAttendance(attendanceResponse)">Save All</button>
-        <button class="btn btn-dark border-secondary px-4 ms-2" (click)="getAttendance()">Cancel</button>
-    </div>
+  <div class="d-flex justify-content-end mt-3 mb-5">
+    <button type="button" class="btn btn-warning fw-bold px-4" (click)="saveAll()"
+      [disabled]="saving || loading || !hasPendingChanges()">Save All</button>
+    <button type="button" class="btn btn-dark border-secondary px-4 ms-2" (click)="cancelEdits()"
+      [disabled]="saving || loading">Cancel</button>
+  </div>
 </div>
 
 <footer class="container-fluid py-4 border-top border-secondary text-center text-white-50">
-    <p class="small mb-1">City of Tulsa Fire Department</p>
-    <p class="x-small">© 2026 City of Tulsa Fire Department.</p>
+  <p class="small mb-1">City of Tulsa Fire Department</p>
+  <p class="x-small">© 2026 City of Tulsa Fire Department.</p>
 </footer>

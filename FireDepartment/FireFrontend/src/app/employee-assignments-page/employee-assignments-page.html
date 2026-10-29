@@ -1,0 +1,166 @@
+<nav class="navbar bg-primary" data-bs-theme="dark">
+  <div class="container-fluid assignment-nav">
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/home">
+      <img src="assets/FireDepartment.png" width="32" height="32" alt="">
+      <span><strong>City of Tulsa</strong> Fire Department</span>
+    </a>
+    <a class="dashboard-link" routerLink="/dashboard">Dashboard</a>
+  </div>
+</nav>
+
+<main class="assignment-shell">
+  <header class="page-heading">
+    <h1>
+      @if (view === 'create') { Add assignment }
+      @else if (view === 'edit') { Edit assignment }
+      @else { Employee Assignments }
+    </h1>
+    @if (view === 'list') {
+      <button type="button" class="btn btn-warning fw-bold" (click)="startCreate()"
+        [disabled]="loadingLookups || companyPositions.length === 0 || workPeriods.length === 0">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Add assignment
+      </button>
+    } @else {
+      <button type="button" class="btn btn-outline-light" (click)="cancelEdit()" [disabled]="saving">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> Assignments
+      </button>
+    }
+  </header>
+
+  @if (errorMessage) { <div class="alert alert-danger" role="alert">{{errorMessage}}</div> }
+  @if (lookupError) { <div class="alert alert-danger" role="alert">{{lookupError}}</div> }
+  @if (notice) { <div class="alert alert-success" role="status">{{notice}}</div> }
+
+  @if (view === 'list') {
+    <div class="filters">
+      <form class="roic-search" (ngSubmit)="findByRoic()">
+        <div>
+          <label for="assignment-roic-search">Find assignments by ROIC</label>
+          <input id="assignment-roic-search" name="roicQuery" type="search" class="form-control"
+            placeholder="Exact ROIC" [(ngModel)]="roicQuery" [disabled]="loading">
+        </div>
+        <button type="submit" class="btn btn-warning" [disabled]="loading || !roicQuery.trim()">Find</button>
+        <button type="button" class="btn btn-outline-light" (click)="loadAssignments()"
+          [disabled]="loading">All</button>
+      </form>
+      <div>
+        <label for="assignment-type-filter">Type</label>
+        <select id="assignment-type-filter" class="form-select" [(ngModel)]="typeFilter">
+          <option value="">All types</option>
+          <option value="regular">Regular</option>
+          <option value="temporary">Temporary</option>
+        </select>
+      </div>
+      <div>
+        <label for="assignment-active-date">Active on date</label>
+        <input id="assignment-active-date" type="date" class="form-control" [(ngModel)]="activeDate">
+      </div>
+    </div>
+
+    <div class="list-count" aria-live="polite">
+      @if (loading) { Loading assignments... }
+      @else if (searchedRoic || typeFilter || activeDate) {
+        {{visibleAssignments.length}} {{visibleAssignments.length === 1 ? 'assignment' : 'assignments'}} match the selected filters
+      } @else { {{assignments.length}} assignments }
+    </div>
+
+    <div class="table-responsive assignment-table">
+      <table class="table table-dark table-hover align-middle">
+        <thead>
+          <tr>
+            <th>ID</th><th>ROIC</th><th>Name</th><th>Station</th><th>Company</th>
+            <th>Position</th><th>Work period</th><th>Start</th><th>End</th><th>Type</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading) {
+            <tr><td colspan="11" class="empty-row">Loading assignments...</td></tr>
+          } @else {
+            @for (assignment of visibleAssignments; track assignment.employeeAssignmentId) {
+              <tr>
+                <td>{{assignment.employeeAssignmentId}}</td>
+                <td>{{assignment.roic}}</td>
+                <td>{{employeeName(assignment.roic)}}</td>
+                <td>{{assignment.stationNbr || '-'}}</td>
+                <td>{{assignment.companyName || '-'}}</td>
+                <td>{{positionSummary(assignment.companyPositionId)}}</td>
+                <td>{{workPeriodName(assignment.workPeriodId)}}</td>
+                <td>{{assignment.assignmentStartDate}}</td>
+                <td>{{assignment.assignmentEndDate || 'Open'}}</td>
+                <td>{{assignment.isTemp ? 'Temporary' : 'Regular'}}</td>
+                <td class="text-end action-cell">
+                  <button type="button" class="icon-button" (click)="startEdit(assignment)"
+                    [disabled]="loadingDetail || deletingId !== null" title="Edit assignment"
+                    [attr.aria-label]="'Edit assignment ' + assignment.employeeAssignmentId">
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="icon-button delete-button" (click)="deleteAssignment(assignment)"
+                    [disabled]="loadingDetail || deletingId !== null" title="Delete assignment"
+                    [attr.aria-label]="'Delete assignment ' + assignment.employeeAssignmentId">
+                    <i class="bi bi-trash" aria-hidden="true"></i>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="11" class="empty-row">No assignments match the selected filters.</td></tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <form #assignmentForm="ngForm" (ngSubmit)="saveAssignment()" class="assignment-form">
+      <div class="form-grid">
+        <div>
+          <label for="assignment-roic">ROIC</label>
+          <input id="assignment-roic" name="roic" type="text" class="form-control" required
+            [(ngModel)]="form.roic" [readonly]="view === 'edit'" [disabled]="saving">
+        </div>
+        <div>
+          <label for="assignment-position">Company position</label>
+          <select id="assignment-position" name="companyPositionId" class="form-select" required
+            [(ngModel)]="form.companyPositionId" [disabled]="saving">
+            <option [ngValue]="null" disabled>Select company position</option>
+            @for (position of companyPositions; track position.companyPositionId) {
+              <option [ngValue]="position.companyPositionId">{{positionName(position.companyPositionId)}}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="assignment-work-period">Work period</label>
+          <select id="assignment-work-period" name="workPeriodId" class="form-select" required
+            [(ngModel)]="form.workPeriodId" [disabled]="saving">
+            <option [ngValue]="null" disabled>Select work period</option>
+            @for (period of workPeriods; track period.workPeriodId) {
+              <option [ngValue]="period.workPeriodId">{{workPeriodName(period.workPeriodId)}}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="assignment-start-date">Start date</label>
+          <input id="assignment-start-date" name="assignmentStartDate" type="date" class="form-control" required
+            [(ngModel)]="form.assignmentStartDate" [disabled]="saving">
+        </div>
+        <div>
+          <label for="assignment-end-date">End date (optional)</label>
+          <input id="assignment-end-date" name="assignmentEndDate" type="date" class="form-control"
+            [min]="form.assignmentStartDate" [(ngModel)]="form.assignmentEndDate" [disabled]="saving">
+        </div>
+        <div class="check-field">
+          <label class="form-check">
+            <input name="isTemp" type="checkbox" class="form-check-input"
+              [(ngModel)]="form.isTemp" [disabled]="saving">
+            <span class="form-check-label">Temporary assignment</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-warning fw-bold" [disabled]="assignmentForm.invalid || saving">
+          {{saving ? 'Saving...' : 'Save assignment'}}
+        </button>
+        <button type="button" class="btn btn-outline-light" (click)="cancelEdit()" [disabled]="saving">Cancel</button>
+      </div>
+    </form>
+  }
+</main>

@@ -1,0 +1,139 @@
+<nav class="navbar bg-primary" data-bs-theme="dark">
+  <div class="container-fluid lookup-nav">
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/home">
+      <img src="assets/FireDepartment.png" width="32" height="32" alt="">
+      <span><strong>City of Tulsa</strong> Fire Department</span>
+    </a>
+    <a class="dashboard-link" routerLink="/dashboard">Dashboard</a>
+  </div>
+</nav>
+
+<main class="lookup-shell">
+  <header class="page-heading">
+    <div>
+      <h1>Lookups</h1>
+      <p>Reference data used throughout FireTime.</p>
+    </div>
+    <button type="button" class="refresh-button" (click)="loadCurrent()" [disabled]="loading"
+      title="Refresh current lookup" aria-label="Refresh current lookup">
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </button>
+  </header>
+
+  <div class="lookup-tabs" aria-label="Lookup categories">
+    <button type="button" [class.active]="activeTab === 'stations'" [attr.aria-pressed]="activeTab === 'stations'"
+      (click)="selectTab('stations')" [disabled]="loading">Stations</button>
+    <button type="button" [class.active]="activeTab === 'companies'" [attr.aria-pressed]="activeTab === 'companies'"
+      (click)="selectTab('companies')" [disabled]="loading">Companies</button>
+    <button type="button" [class.active]="activeTab === 'company-positions'" [attr.aria-pressed]="activeTab === 'company-positions'"
+      (click)="selectTab('company-positions')" [disabled]="loading">Company positions</button>
+    <button type="button" [class.active]="activeTab === 'shifts'" [attr.aria-pressed]="activeTab === 'shifts'"
+      (click)="selectTab('shifts')" [disabled]="loading">Shifts</button>
+    <button type="button" [class.active]="activeTab === 'job-titles'" [attr.aria-pressed]="activeTab === 'job-titles'"
+      (click)="selectTab('job-titles')" [disabled]="loading">Job titles</button>
+    <button type="button" [class.active]="activeTab === 'work-periods'" [attr.aria-pressed]="activeTab === 'work-periods'"
+      (click)="selectTab('work-periods')" [disabled]="loading">Work periods</button>
+    <button type="button" [class.active]="activeTab === 'employee-status-codes'" [attr.aria-pressed]="activeTab === 'employee-status-codes'"
+      (click)="selectTab('employee-status-codes')" [disabled]="loading">Employee status codes</button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="alert alert-danger mt-3" role="alert">{{errorMessage}}</div>
+  }
+
+  <div class="lookup-toolbar">
+    <div class="lookup-meta" aria-live="polite">
+      @if (loading) { Loading... }
+      @else if (!errorMessage) {
+        @if (searchText.trim()) { {{visibleCount}} of {{rowCount}} records }
+        @else { {{rowCount}} records }
+      }
+    </div>
+    <input type="search" class="lookup-search" aria-label="Search current lookup"
+      placeholder="Search current lookup" [(ngModel)]="searchText" [disabled]="loading || !!errorMessage">
+  </div>
+
+  @if (!loading && !errorMessage) {
+    <div class="table-responsive">
+      @switch (activeTab) {
+        @case ('stations') {
+          <table class="table table-dark table-hover align-middle">
+            <thead><tr><th>ID</th><th>Station</th><th>District ID</th><th>Status</th><th>Comment</th></tr></thead>
+            <tbody>
+              @for (item of visibleStations; track item.stationId) {
+                <tr><td>{{item.stationId}}</td><td>{{item.stationNbr}}</td><td>{{item.districtId}}</td>
+                  <td>{{item.isActive ? 'Active' : 'Inactive'}}</td><td>{{item.stationComment || '-'}}</td></tr>
+              } @empty { <tr><td colspan="5" class="empty-row">No matching stations.</td></tr> }
+            </tbody>
+          </table>
+        }
+        @case ('companies') {
+          <table class="table table-dark table-hover align-middle">
+            <thead><tr><th>ID</th><th>Company</th><th>Station ID</th><th>Members</th><th>Medical classification</th><th>Status</th><th>Comment</th></tr></thead>
+            <tbody>
+              @for (item of visibleCompanies; track item.companyId) {
+                <tr><td>{{item.companyId}}</td><td>{{item.companyNme}}</td><td>{{item.stationId ?? '-'}}</td>
+                  <td>{{item.companyMemberCount}}</td><td>{{item.medicalClassification || '-'}}</td>
+                  <td>{{item.isActive ? 'Active' : 'Inactive'}}</td><td>{{item.companyComment || '-'}}</td></tr>
+              } @empty { <tr><td colspan="7" class="empty-row">No matching companies.</td></tr> }
+            </tbody>
+          </table>
+        }
+        @case ('company-positions') {
+          <table class="table table-dark table-hover align-middle">
+            <thead><tr><th>ID</th><th>Station</th><th>Company</th><th>Shift</th><th>Job title</th><th>Truck position</th></tr></thead>
+            <tbody>
+              @for (item of visibleCompanyPositions; track item.companyPositionId) {
+                <tr><td>{{item.companyPositionId}}</td><td>{{item.stationNumber || '-'}}</td>
+                  <td>{{item.companyName || item.companyId}}</td><td>{{item.shiftName || item.shiftId}}</td>
+                  <td>{{item.jobTitleShortDesc || item.jobTitleId}}</td><td>{{item.truckPosition}}</td></tr>
+              } @empty { <tr><td colspan="6" class="empty-row">No matching company positions.</td></tr> }
+            </tbody>
+          </table>
+        }
+        @case ('shifts') {
+          <table class="table table-dark table-hover align-middle">
+            <thead><tr><th>ID</th><th>Code</th><th>Name</th><th>Sort order</th><th>Status</th></tr></thead>
+            <tbody>
+              @for (item of visibleShifts; track item.shiftId) {
+                <tr><td>{{item.shiftId}}</td><td>{{item.shiftCode}}</td><td>{{item.shiftNme || '-'}}</td>
+                  <td>{{item.sortOrder ?? '-'}}</td><td>{{item.isActive ? 'Active' : 'Inactive'}}</td></tr>
+              } @empty { <tr><td colspan="5" class="empty-row">No matching shifts.</td></tr> }
+            </tbody>
+          </table>
+        }
+        @case ('job-titles') {
+          <table class="table table-dark table-hover align-middle">
+            <thead><tr><th>ID</th><th>Job title</th><th>Short description</th><th>Salary range grade</th><th>Status</th></tr></thead>
+            <tbody>
+              @for (item of visibleJobTitles; track item.jobTitleId) {
+                <tr><td>{{item.jobTitleId}}</td><td>{{item.jobTitleDesc}}</td><td>{{item.jobTitleShortDesc}}</td>
+                  <td>{{item.salaryRangeGradeCde}}</td><td>{{item.isActive ? 'Active' : 'Inactive'}}</td></tr>
+              } @empty { <tr><td colspan="5" class="empty-row">No matching job titles.</td></tr> }
+            </tbody>
+          </table>
+        }
+        @case ('work-periods') {
+          <table class="table table-dark table-hover align-middle">
+            <thead><tr><th>ID</th><th>Work period</th><th>Week day</th></tr></thead>
+            <tbody>
+              @for (item of visibleWorkPeriods; track item.workPeriodId) {
+                <tr><td>{{item.workPeriodId}}</td><td>{{item.workPeriodNbr}}</td><td>{{item.weekDay}}</td></tr>
+              } @empty { <tr><td colspan="3" class="empty-row">No matching work periods.</td></tr> }
+            </tbody>
+          </table>
+        }
+        @case ('employee-status-codes') {
+          <table class="table table-dark table-hover align-middle">
+            <thead><tr><th>Code</th><th>Description</th></tr></thead>
+            <tbody>
+              @for (item of visibleEmployeeStatusCodes; track item.employeeStatusCde) {
+                <tr><td>{{item.employeeStatusCde}}</td><td>{{item.employeeStatusDesc}}</td></tr>
+              } @empty { <tr><td colspan="2" class="empty-row">No matching employee status codes.</td></tr> }
+            </tbody>
+          </table>
+        }
+      }
+    </div>
+  }
+</main>

@@ -1,0 +1,56 @@
+<nav class="navbar bg-primary" data-bs-theme="dark">
+  <div class="container-fluid dashboard-nav">
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/home">
+      <img src="assets/FireDepartment.png" width="32" height="32" alt="">
+      <span><strong>City of Tulsa</strong> <span class="department-name">Fire Department</span></span>
+    </a>
+    <div class="dashboard-links">
+      <a routerLink="/home">Home</a>
+      <span aria-current="page">Dashboard</span>
+    </div>
+  </div>
+</nav>
+
+<main class="dashboard-shell">
+  <header class="dashboard-heading">
+    <h1>Dashboard</h1>
+  </header>
+
+  <section aria-labelledby="operations-heading">
+    <h2 id="operations-heading">Daily operations</h2>
+    <div class="feature-grid">
+      <a class="feature-card" routerLink="/attendance" aria-label="Open Attendance">
+        <span class="feature-icon" aria-hidden="true"><i class="bi bi-calendar2-check"></i></span>
+        <span class="feature-content">
+          <strong>Attendance</strong>
+          <span>Review the daily roster, record attendance, and update statuses.</span>
+        </span>
+        <i class="bi bi-arrow-up-right feature-arrow" aria-hidden="true"></i>
+      </a>
+      <a class="feature-card" routerLink="/lookups" aria-label="Open Lookups">
+        <span class="feature-icon" aria-hidden="true"><i class="bi bi-list-ul"></i></span>
+        <span class="feature-content">
+          <strong>Lookups</strong>
+          <span>Browse stations, companies, positions, shifts, titles, work periods, and employee status codes.</span>
+        </span>
+        <i class="bi bi-arrow-up-right feature-arrow" aria-hidden="true"></i>
+      </a>
+      <a class="feature-card" routerLink="/employees" aria-label="Open Employees">
+        <span class="feature-icon" aria-hidden="true"><i class="bi bi-people"></i></span>
+        <span class="feature-content">
+          <strong>Employees</strong>
+          <span>Find employee records and manage employee details.</span>
+        </span>
+        <i class="bi bi-arrow-up-right feature-arrow" aria-hidden="true"></i>
+      </a>
+      <a class="feature-card" routerLink="/employee-assignments" aria-label="Open Employee Assignments">
+        <span class="feature-icon" aria-hidden="true"><i class="bi bi-person-lines-fill"></i></span>
+        <span class="feature-content">
+          <strong>Employee Assignments</strong>
+          <span>Review assignments and manage positions, work periods, and dates.</span>
+        </span>
+        <i class="bi bi-arrow-up-right feature-arrow" aria-hidden="true"></i>
+      </a>
+    </div>
+  </section>
+</main>

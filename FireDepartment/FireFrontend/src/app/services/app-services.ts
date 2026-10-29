@@ -14,7 +14,12 @@ import { AttendanceRequest,
   ShiftResponse,
   JobTitleResponse,
   WorkPeriodResponse,
-  EmployeeStatusCodeResponse} from '../interfaces';
+  EmployeeStatusCodeResponse,
+  EmployeeDetailResponse,
+  CreateEmployeeRequest,
+  UpdateEmployeeRequest,
+  EmployeeAssignmentRequest,
+  EmployeeAssignmentResponse} from '../interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -54,6 +59,46 @@ export class AppServices {
       params = params.set('workPeriodNbr', workPeriodNbr.toString());
     }
     return this.http.get<DailyRosterResponse[]>(`${this.api_url}/api/attendance/daily-roster`, { params });
+  }
+
+  GetEmployees(): Observable<EmployeeDetailResponse[]> {
+    return this.http.get<EmployeeDetailResponse[]>(`${this.api_url}/api/employee/getEmployees`);
+  }
+
+  GetEmployeeByRoic(roic: string): Observable<EmployeeDetailResponse> {
+    return this.http.get<EmployeeDetailResponse>(`${this.api_url}/api/employee/getEmployeeByRoic/${encodeURIComponent(roic)}`);
+  }
+
+  CreateEmployee(request: CreateEmployeeRequest): Observable<EmployeeDetailResponse> {
+    return this.http.post<EmployeeDetailResponse>(`${this.api_url}/api/employee/createEmployee`, request);
+  }
+
+  UpdateEmployee(roic: string, request: UpdateEmployeeRequest): Observable<EmployeeDetailResponse> {
+    return this.http.put<EmployeeDetailResponse>(`${this.api_url}/api/employee/updateEmployee/${encodeURIComponent(roic)}`, request);
+  }
+
+  GetEmployeeAssignments(): Observable<EmployeeAssignmentResponse[]> {
+    return this.http.get<EmployeeAssignmentResponse[]>(`${this.api_url}/api/employeeAssignment/getEmployeeAssignments`);
+  }
+
+  GetEmployeeAssignmentsByRoic(roic: string): Observable<EmployeeAssignmentResponse[]> {
+    return this.http.get<EmployeeAssignmentResponse[]>(`${this.api_url}/api/employeeAssignment/getEmployeeAssignmentsByEmployeeNbr/${encodeURIComponent(roic)}`);
+  }
+
+  GetEmployeeAssignmentById(roic: string, assignmentId: number): Observable<EmployeeAssignmentResponse> {
+    return this.http.get<EmployeeAssignmentResponse>(`${this.api_url}/api/employeeAssignment/getEmployeeAssignmentById/${encodeURIComponent(roic)}/${assignmentId}`);
+  }
+
+  CreateEmployeeAssignment(request: EmployeeAssignmentRequest): Observable<EmployeeAssignmentResponse> {
+    return this.http.post<EmployeeAssignmentResponse>(`${this.api_url}/api/employeeAssignment/createEmployeeAssignment`, request);
+  }
+
+  UpdateEmployeeAssignment(assignmentId: number, request: EmployeeAssignmentRequest): Observable<EmployeeAssignmentResponse> {
+    return this.http.put<EmployeeAssignmentResponse>(`${this.api_url}/api/employeeAssignment/updateEmployeeAssignment/${assignmentId}`, request);
+  }
+
+  DeleteEmployeeAssignment(roic: string, assignmentId: number): Observable<void> {
+    return this.http.delete<void>(`${this.api_url}/api/employeeAssignment/deleteEmployeeAssignment/${encodeURIComponent(roic)}/${assignmentId}`);
   }
 
   //Organizational Lookups
