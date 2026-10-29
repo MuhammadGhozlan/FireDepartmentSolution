@@ -125,6 +125,11 @@ export class EmployeeAssignmentsPage {
     return result;
   }
 
+  get endDateBeforeStart(): boolean {
+    return !!this.form.assignmentStartDate && !!this.form.assignmentEndDate &&
+      this.form.assignmentEndDate < this.form.assignmentStartDate;
+  }
+
   employeeName(roic: string): string {
     return this.employeeNames[roic] || '-';
   }
@@ -198,7 +203,7 @@ export class EmployeeAssignmentsPage {
       this.cdr.detectChanges();
       return;
     }
-    if (this.form.assignmentEndDate && this.form.assignmentEndDate < this.form.assignmentStartDate) {
+    if (this.endDateBeforeStart) {
       this.errorMessage = 'End date cannot be earlier than start date.';
       this.cdr.detectChanges();
       return;

@@ -111,9 +111,12 @@ describe('EmployeeAssignmentsPage', () => {
       roic: '100512', assignmentStartDate: '2026-07-01', assignmentEndDate: '2026-06-30',
       isTemp: false, companyPositionId: 12, workPeriodId: 3,
     };
+    expect(page.endDateBeforeStart).toBe(true);
     await page.saveAssignment();
     expect(service.CreateEmployeeAssignment).not.toHaveBeenCalled();
     expect(page.errorMessage).toContain('End date');
+    page.form.assignmentEndDate = '2026-07-01';
+    expect(page.endDateBeforeStart).toBe(false);
   });
 
   it('updates an assignment using its ID and unchanged ROIC', async () => {

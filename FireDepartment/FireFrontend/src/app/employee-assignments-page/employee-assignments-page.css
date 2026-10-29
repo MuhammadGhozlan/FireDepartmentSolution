@@ -178,6 +178,20 @@ label {
   border-color: #d56916;
 }
 
+.date-rules {
+  color: #c5d6df;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.date-error {
+  color: #ffadad;
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
 .form-actions {
   display: flex;
   gap: 10px;

@@ -1,0 +1,7 @@
+@media (max-width: 700px) {
+  .attendance-filters > .col,
+  .attendance-filters > .col-auto {
+    flex: 0 0 100%;
+    width: 100%;
+  }
+}

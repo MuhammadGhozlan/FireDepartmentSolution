@@ -145,7 +145,18 @@
         <div>
           <label for="assignment-end-date">End date (optional)</label>
           <input id="assignment-end-date" name="assignmentEndDate" type="date" class="form-control"
-            [min]="form.assignmentStartDate" [(ngModel)]="form.assignmentEndDate" [disabled]="saving">
+            [min]="form.assignmentStartDate" [(ngModel)]="form.assignmentEndDate" [disabled]="saving"
+            [class.is-invalid]="endDateBeforeStart" [attr.aria-invalid]="endDateBeforeStart"
+            [attr.aria-describedby]="endDateBeforeStart ? 'assignment-date-rules assignment-date-error' : 'assignment-date-rules'">
+          @if (endDateBeforeStart) {
+            <div id="assignment-date-error" class="date-error" role="alert">End date cannot be earlier than start date.</div>
+          }
+          <ul id="assignment-date-rules" class="date-rules">
+            <li>End date must be on or after start date.</li>
+            @if (view === 'edit') {
+              <li>Existing attendance must remain within these dates.</li>
+            }
+          </ul>
         </div>
         <div class="check-field">
           <label class="form-check">
@@ -156,7 +167,7 @@
         </div>
       </div>
       <div class="form-actions">
-        <button type="submit" class="btn btn-warning fw-bold" [disabled]="assignmentForm.invalid || saving">
+        <button type="submit" class="btn btn-warning fw-bold" [disabled]="assignmentForm.invalid || endDateBeforeStart || saving">
           {{saving ? 'Saving...' : 'Save assignment'}}
         </button>
         <button type="button" class="btn btn-outline-light" (click)="cancelEdit()" [disabled]="saving">Cancel</button>
