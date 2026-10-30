@@ -31,6 +31,7 @@ builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IEmployeeAssignmentRepository, EmployeeAssignmentRepository>();
 builder.Services.AddScoped<ILookupsRepository, LookupsRepository>();
+builder.Services.AddScoped<ILeaveRepository, LeaveRepository>();
 
 //Services Registration
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();

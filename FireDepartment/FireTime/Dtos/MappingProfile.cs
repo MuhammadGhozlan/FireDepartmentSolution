@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FireTime.Dtos.Attendance;
 using FireTime.Dtos.Employees;
+using FireTime.Dtos.Leave;
 using FireTime.Dtos.Lookups;
 using FireTime.Models;
 
@@ -28,6 +29,10 @@ namespace FireTime.Dtos
             CreateMap<JobTitle, JobTitleResponse>();
             CreateMap<CompanyPosition, CompanyPositionResponse>();
             CreateMap<EmployeeStatusCode, EmployeeStatusCodeResponse>();
+
+
+            CreateMap<LeaveRequestRequest, LeaveRequest>().ForMember(dest => dest.LeaveRequestId, opt => opt.Ignore());
+            CreateMap<LeaveRequest, LeaveRequestResponse>().ForCtorParam("ApprovalStatusName", opt=>opt.MapFrom(src=>src.ApprovalStatus.ApprovalStatusCde));
         }
     }
 }

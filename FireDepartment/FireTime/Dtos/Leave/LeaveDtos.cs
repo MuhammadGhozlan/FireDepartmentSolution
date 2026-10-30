@@ -17,6 +17,7 @@ public sealed record LeaveRequestResponse(
     int LeaveDetailId,
     string? ApproverRoic,
     int ApprovalStatusId,
+    string ApprovalStatusName,
     string? RequesterComment,
     string? ApproverComment);
 
