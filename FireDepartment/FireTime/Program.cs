@@ -38,6 +38,7 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IEmployeeAssignmentService, EmployeeAssignmentService>();
 builder.Services.AddScoped<ILookupsService, LookupsService>();
+builder.Services.AddScoped<ILeaveService, LeaveService>();
 
 var app = builder.Build();
 
