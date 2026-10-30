@@ -40,10 +40,7 @@ namespace FireTime.Services
 
         public async Task<LeaveRequestResponse> MakeLeaveRequestsAsync(LeaveRequestRequest request)
         {
-            if(request == null)
-            {
-                throw new ArgumentNullException(nameof(request), "The leave request payload cannot be null.");
-            }
+            ValidateLeaveRequestPayload(request);
 
             return await _leaveRepository.MakeLeaveRequests(request);
         }
@@ -55,10 +52,7 @@ namespace FireTime.Services
                 throw new ArgumentException("Leave request ID must be greater than zero.", nameof(leaveRequestId));
             }
 
-            if(request == null)
-            {
-                throw new ArgumentNullException(nameof(request), "The leave request payload cannot be null.");
-            }
+            ValidateLeaveRequestPayload(request);
 
             return await _leaveRepository.UpdateLeaveRequest(leaveRequestId, request);
         }
@@ -73,5 +67,22 @@ namespace FireTime.Services
             return await _leaveRepository.DeleteLeaveRequests(leaveRequestId);
         }
 
+        private static void ValidateLeaveRequestPayload(LeaveRequestRequest request)
+        {
+            if(request == null)
+            {
+                throw new ArgumentNullException(nameof(request), "The leave request payload cannot be null.");
+            }
+
+            if(request.LeaveRequestHours <= 0)
+            {
+                throw new ArgumentException("Leave hours must be greater than zero.");
+            }
+
+            if(request.LeaveStartDate > request.LeaveEndDate)
+            {
+                throw new ArgumentException("Start date cannot be after end date.");
+            }
+        }
     }
 }

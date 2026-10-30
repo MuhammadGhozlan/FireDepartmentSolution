@@ -1,6 +1,5 @@
 ﻿using FireTime.Dtos.Leave;
 using FireTime.Interfaces.Service_Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FireTime.Controllers
@@ -19,43 +18,129 @@ namespace FireTime.Controllers
         [HttpGet("GetAllLeaveRequests")]
         public async Task<ActionResult<List<LeaveRequestResponse>>> GetAllLeaveRequests()
         {
-            var result = await _leaveService.GetAllLeaveRequestsAsync();
-            return Ok(result);
+            try
+            {
+                var result = await _leaveService.GetAllLeaveRequestsAsync();
+                return Ok(result);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpGet("GetAllLeaveRequestsForRequester/{requesterRoic}")]
         public async Task<ActionResult<List<LeaveRequestResponse>>> GetAllLeaveRequestsForRequester(string requesterRoic)
         {
-            var result = await _leaveService.GetAllLeaveRequestsForRequesterAsync(requesterRoic);
-            return Ok(result);
+            try
+            {
+                var result = await _leaveService.GetAllLeaveRequestsForRequesterAsync(requesterRoic);
+                return Ok(result);
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpGet("GetLeaveRequestById/{leaveRequestId:int}")]
         public async Task<ActionResult<LeaveRequestResponse>> GetLeaveRequestById(int leaveRequestId)
         {
-            var result = await _leaveService.GetLeaveRequestByIdAsync(leaveRequestId);
-            return Ok(result);
+            try
+            {
+                var result = await _leaveService.GetLeaveRequestByIdAsync(leaveRequestId);
+                return Ok(result);
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpPost("MakeLeaveRequest")]
         public async Task<ActionResult<LeaveRequestResponse>> MakeLeaveRequest([FromBody] LeaveRequestRequest request)
         {
-            var result = await _leaveService.MakeLeaveRequestsAsync(request);
-            return CreatedAtAction(nameof(GetLeaveRequestById), new { leaveRequestId = result.LeaveRequestId }, result);
+            try
+            {
+                var result = await _leaveService.MakeLeaveRequestsAsync(request);
+                return CreatedAtAction(nameof(GetLeaveRequestById), new { leaveRequestId = result.LeaveRequestId }, result);
+            }
+            catch(ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpPut("UpdateLeaveRequest/{leaveRequestId:int}")]
         public async Task<ActionResult<LeaveRequestResponse>> UpdateLeaveRequest(int leaveRequestId, [FromBody] LeaveRequestRequest request)
         {
-            var result = await _leaveService.UpdateLeaveRequestAsync(leaveRequestId, request);
-            return Ok(result);
+            try
+            {
+                var result = await _leaveService.UpdateLeaveRequestAsync(leaveRequestId, request);
+                return Ok(result);
+            }
+            catch(ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpDelete("DeleteLeaveRequest/{leaveRequestId:int}")]
         public async Task<ActionResult<bool>> DeleteLeaveRequest(int leaveRequestId)
         {
-            var result = await _leaveService.DeleteLeaveRequestsAsync(leaveRequestId);
-            return Ok(result);
+            try
+            {
+                var result = await _leaveService.DeleteLeaveRequestsAsync(leaveRequestId);
+                return Ok(result);
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }

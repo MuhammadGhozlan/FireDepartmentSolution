@@ -1,6 +1,7 @@
 namespace FireTime.Dtos.Leave;
 
 public sealed record LeaveRequestRequest(
+    string RequesterRoic
     decimal LeaveRequestHours,
     DateTime LeaveStartDate,
     DateTime LeaveEndDate,
