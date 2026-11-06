@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FireTime.Controllers
 {
-    [Authorize(Policy = "RequireEmployee")]
+    //[Authorize(Policy = "RequireEmployee")]
     [ApiController]
     [Route("api/Leave")]
     public class LeaveController : ControllerBase

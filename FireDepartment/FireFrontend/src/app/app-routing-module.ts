@@ -11,6 +11,7 @@ import { LeaveManagementPage } from './leave-management-page/leave-management-pa
 import { EmployeeAssignmentsPage } from './employee-assignments-page/employee-assignments-page';
 import { ReportsPage } from './reports-page/reports-page';
 import { LoginPage } from './login-page/login-page';
+import { LeaveRequestPage } from './leave-request-page/leave-request-page';
 
 const routes: Routes = [
   { path: 'home', component: HomePage },
@@ -25,7 +26,8 @@ const routes: Routes = [
   { path: 'employee-assignments', component: EmployeeAssignmentsPage },
   { path: 'assignment', redirectTo: 'employee-assignments', pathMatch: 'full' },
   { path: 'reports', component: ReportsPage },
-  { path: 'login', component: LoginPage }
+  { path: 'login', component: LoginPage },
+  { path: 'leaveRequest', component: LeaveRequestPage }
 ];
 
 @NgModule({

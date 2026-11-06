@@ -129,4 +129,8 @@ export class AppServices {
   GetEmployeeStatusCodes(): Observable<EmployeeStatusCodeResponse[]> {
     return this.http.get<EmployeeStatusCodeResponse[]>(`${this.api_url}/api/lookups/employee-status-codes`);
   }
+
+  GetClaims():Observable<any[]>{
+    return this.http.get<any[]>(`${this.api_url}/api/leave/GetMyClaims`);
+  }
 }
