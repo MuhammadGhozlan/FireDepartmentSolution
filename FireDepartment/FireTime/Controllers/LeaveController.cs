@@ -1,9 +1,12 @@
 ﻿using FireTime.Dtos.Leave;
 using FireTime.Interfaces.Service_Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FireTime.Controllers
 {
+    [Authorize(Policy = "RequireEmployee")]
     [ApiController]
     [Route("api/Leave")]
     public class LeaveController : ControllerBase
@@ -23,27 +26,29 @@ namespace FireTime.Controllers
                 var result = await _leaveService.GetAllLeaveRequestsAsync();
                 return Ok(result);
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, "An unexpected error occurred while retrieving leave requests.");
             }
         }
 
         [HttpGet("GetAllLeaveRequestsForRequester/{requesterRoic}")]
-        public async Task<ActionResult<List<LeaveRequestResponse>>> GetAllLeaveRequestsForRequester(string requesterRoic)
+        public async Task<ActionResult<List<LeaveRequestResponse>>> GetAllLeaveRequestsForRequester()
         {
             try
             {
-                var result = await _leaveService.GetAllLeaveRequestsForRequesterAsync(requesterRoic);
+                var roic = User.FindFirst("roic")?.Value;
+                if(roic == null) throw new KeyNotFoundException($"roic has not been found {roic}");
+                var result = await _leaveService.GetAllLeaveRequestsForRequesterAsync(roic);
                 return Ok(result);
             }
             catch(ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, "An unexpected error occurred while retrieving leave requests.");
             }
         }
 
@@ -63,9 +68,9 @@ namespace FireTime.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, "An unexpected error occurred while retrieving the leave request.");
             }
         }
 
@@ -74,6 +79,9 @@ namespace FireTime.Controllers
         {
             try
             {
+                var roic = User.FindFirst("roic")?.Value;
+                if(roic == null) throw new KeyNotFoundException($"roic has not been found {roic}");
+                request = request with { RequesterRoic = roic };
                 var result = await _leaveService.MakeLeaveRequestsAsync(request);
                 return CreatedAtAction(nameof(GetLeaveRequestById), new { leaveRequestId = result.LeaveRequestId }, result);
             }
@@ -89,9 +97,13 @@ namespace FireTime.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch(Exception ex)
+            catch(DbUpdateException)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, "A database error occurred while creating the leave request.");
+            }
+            catch(Exception)
+            {
+                return StatusCode(500, "An unexpected error occurred.");
             }
         }
 
@@ -115,9 +127,13 @@ namespace FireTime.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch(Exception ex)
+            catch(DbUpdateException)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, "A database error occurred while updating the leave request.");
+            }
+            catch(Exception)
+            {
+                return StatusCode(500, "An unexpected error occurred.");
             }
         }
 
@@ -137,10 +153,23 @@ namespace FireTime.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch(Exception ex)
+            catch(DbUpdateException)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, "A database error occurred while deleting the leave request.");
             }
+            catch(Exception)
+            {
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+        }
+        [HttpGet("GetMyClaims")]
+        public IActionResult GetMyClaims()
+        {
+            return Ok(User.Claims.Select(c => new
+            {
+                c.Type,
+                c.Value
+            }));
         }
     }
 }

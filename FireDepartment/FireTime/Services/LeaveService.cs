@@ -41,7 +41,6 @@ namespace FireTime.Services
         public async Task<LeaveRequestResponse> MakeLeaveRequestsAsync(LeaveRequestRequest request)
         {
             ValidateLeaveRequestPayload(request);
-
             return await _leaveRepository.MakeLeaveRequests(request);
         }
 
@@ -53,7 +52,6 @@ namespace FireTime.Services
             }
 
             ValidateLeaveRequestPayload(request);
-
             return await _leaveRepository.UpdateLeaveRequest(leaveRequestId, request);
         }
 
@@ -77,6 +75,11 @@ namespace FireTime.Services
             if(request.LeaveRequestHours <= 0)
             {
                 throw new ArgumentException("Leave hours must be greater than zero.");
+            }
+
+            if(request.LeaveRequestHours >= 100m)
+            {
+                throw new ArgumentException("Leave hours cannot exceed 99.99 hours.");
             }
 
             if(request.LeaveStartDate > request.LeaveEndDate)

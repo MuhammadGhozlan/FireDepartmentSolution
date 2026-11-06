@@ -43,6 +43,8 @@ namespace FireTime.Repositories
         public async Task<LeaveRequestResponse> MakeLeaveRequests(LeaveRequestRequest request)
         {
             if(request == null) throw new ArgumentNullException(nameof(request), "the request body cannot be null");
+
+            await ValidateForeignKeysAsync(request);
             var leaveRequest = _mapper.Map<LeaveRequest>(request);
 
             leaveRequest.LeaveRequestSubmitDate = DateTime.UtcNow;
@@ -62,14 +64,34 @@ namespace FireTime.Repositories
         public async Task<LeaveRequestResponse> UpdateLeaveRequest(int leaveRequestId, LeaveRequestRequest request)
         {
             var leaveRequest = await _context.LeaveRequests.Where(lr => lr.LeaveRequestId == leaveRequestId && !lr.DeletedInd).FirstOrDefaultAsync();
-            if(leaveRequest == null) throw new KeyNotFoundException($"no leave request could be found for {leaveRequestId}");
+
+            if(leaveRequest == null)
+                throw new KeyNotFoundException($"no leave request could be found for {leaveRequestId}");
+            await ValidateForeignKeysAsync(request);
+            var originalRequesterRoic = leaveRequest.RequesterRoic;
             _mapper.Map(request, leaveRequest);
+            leaveRequest.RequesterRoic = originalRequesterRoic;
             leaveRequest.LastUpdateDate = DateTime.UtcNow;
             leaveRequest.LastUpdateBy = request.RequesterRoic;
             await _context.SaveChangesAsync();
 
             var updatedEntity = await _context.LeaveRequests.Include(lr => lr.ApprovalStatus).AsNoTracking().Where(lr => !lr.DeletedInd && lr.LeaveRequestId == leaveRequestId).FirstOrDefaultAsync();
             return _mapper.Map<LeaveRequestResponse>(updatedEntity);
+        }
+
+        private async Task ValidateForeignKeysAsync(LeaveRequestRequest request)
+        {
+            var requesterExists = await _context.Employees
+                .AnyAsync(e => e.Roic == request.RequesterRoic);
+
+            if(!requesterExists)
+                throw new KeyNotFoundException($"Requester employee with ROIC '{request.RequesterRoic}' does not exist.");
+
+            var leaveCodeExists = await _context.LeaveDetailCodes
+                .AnyAsync(ldc => ldc.LeaveDetailId == request.LeaveDetailId);
+
+            if(!leaveCodeExists)
+                throw new KeyNotFoundException($"Leave code detail ID {request.LeaveDetailId} does not exist.");
         }
 
     }
